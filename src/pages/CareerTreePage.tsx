@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { professionTree, ProfessionNode } from '../lib/professionTree';
-import { ChevronRight, ChevronDown, Lock, Unlock, GraduationCap } from 'lucide-react';
+import { ChevronRight, ChevronDown, Lock, Unlock, GraduationCap, TreePine, List } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
+import { SkillTreeView } from '../components/SkillTreeView';
 
-// Recursive Wrapper to handle Parent ID passing
+// Recursive Wrapper to handle Parent ID passing (Mobile/Accordion View)
 const ProfessionNodeRenderer = ({
     node,
     depth = 0,
@@ -21,12 +22,10 @@ const ProfessionNodeRenderer = ({
     onUnlock: (id: string, level: number, parentId?: string) => void,
     parentId?: string
 }) => {
-    const [isOpen, setIsOpen] = useState(depth < 2); // Expand deeper initially
+    const [isOpen, setIsOpen] = useState(depth < 1);
     const isUnlocked = unlockedIds.includes(node.id);
     const hasChildren = node.children && node.children.length > 0;
 
-    // Check unlockability
-    // Parent must be unlocked (if exists).
     const parentUnlocked = !parentId || unlockedIds.includes(parentId);
     const levelMet = userLevel >= node.levelRequired;
     const canUnlock = !isUnlocked && parentUnlocked && levelMet;
@@ -55,21 +54,18 @@ const ProfessionNodeRenderer = ({
                 style={{ marginLeft: `${depth * 16}px` }}
                 onClick={() => hasChildren && setIsOpen(!isOpen)}
             >
-                {/* Connecting Lines (for visual hierarchy) */}
                 {depth > 0 && (
                     <div className="absolute -left-[16px] top-1/2 w-4 h-[1px] bg-slate-700"></div>
                 )}
 
-                {/* Expansion Icon */}
                 <div className="mr-2 cursor-pointer p-1 hover:bg-white/5 rounded-full" onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}>
                     {hasChildren ? (
                         isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
                     ) : (
-                        <div className="w-4 h-4" /> // Spacer
+                        <div className="w-4 h-4" />
                     )}
                 </div>
 
-                {/* Status Icon */}
                 <div className="mr-3 shrink-0">
                     {isUnlocked ? (
                         <div className="bg-cyan-500/20 p-2 rounded-lg text-cyan-400 border border-cyan-500/30">
@@ -86,7 +82,6 @@ const ProfessionNodeRenderer = ({
                     )}
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                         <div className="font-bold text-sm sm:text-base truncate pr-2">{node.label}</div>
@@ -123,7 +118,6 @@ const ProfessionNodeRenderer = ({
                 )}
             </motion.div>
 
-            {/* Children */}
             <AnimatePresence>
                 {isOpen && hasChildren && (
                     <motion.div
@@ -152,37 +146,81 @@ const ProfessionNodeRenderer = ({
 
 export const CareerTreePage = () => {
     const { unlockedProfessions, level, unlockProfession } = useGameStore();
+    const [viewMode, setViewMode] = useState<'tree' | 'list'>('tree');
 
     return (
-        <div className="w-full max-w-4xl mx-auto pb-20">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-2">
-                    Árvore de Carreira
-                </h1>
-                <p className="text-slate-400 text-sm">
-                    Evolua na sua carreira médica desbloqueando especializações conforme sobe de nível.
-                </p>
+        <div className="w-full max-w-7xl mx-auto pb-20">
+            <div className="mb-6">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-2">
+                            Árvore de Habilidades
+                        </h1>
+                        <p className="text-slate-400 text-sm">
+                            Desbloqueie especializações médicas conforme evolui sua carreira.
+                        </p>
+                    </div>
 
-                <div className="mt-4 flex gap-4 text-xs text-slate-400 bg-slate-800/50 p-3 rounded-lg border border-white/5">
+                    {/* View Mode Toggle */}
+                    <div className="flex gap-2 bg-slate-800/50 p-1 rounded-lg border border-white/10">
+                        <button
+                            onClick={() => setViewMode('tree')}
+                            className={clsx(
+                                "flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium transition-all",
+                                viewMode === 'tree'
+                                    ? "bg-cyan-500 text-black"
+                                    : "text-slate-400 hover:text-white"
+                            )}
+                        >
+                            <TreePine size={16} />
+                            Árvore
+                        </button>
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={clsx(
+                                "flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium transition-all",
+                                viewMode === 'list'
+                                    ? "bg-cyan-500 text-black"
+                                    : "text-slate-400 hover:text-white"
+                            )}
+                        >
+                            <List size={16} />
+                            Lista
+                        </button>
+                    </div>
+                </div>
+
+                <div className="mt-4 flex gap-4 text-xs text-slate-400 bg-slate-800/50 p-3 rounded-lg border border-white/5 w-fit">
                     <div className="flex items-center gap-2">
                         <GraduationCap className="w-4 h-4 text-cyan-400" />
                         <span>{unlockedProfessions.length} Especializações</span>
                     </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-yellow-400">Nível {level}</span>
+                    </div>
                 </div>
             </div>
 
-            <div className="space-y-4">
-                {professionTree.map(node => (
-                    <ProfessionNodeRenderer
-                        key={node.id}
-                        node={node}
-                        unlockedIds={unlockedProfessions}
-                        userLevel={level}
-                        onUnlock={unlockProfession}
-                        parentId={undefined} // Root root has no parent check
-                    />
-                ))}
-            </div>
+            {/* Skill Tree View */}
+            {viewMode === 'tree' && (
+                <SkillTreeView />
+            )}
+
+            {/* List View */}
+            {viewMode === 'list' && (
+                <div className="space-y-4">
+                    {professionTree.map(node => (
+                        <ProfessionNodeRenderer
+                            key={node.id}
+                            node={node}
+                            unlockedIds={unlockedProfessions}
+                            userLevel={level}
+                            onUnlock={unlockProfession}
+                            parentId={undefined}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
