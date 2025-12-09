@@ -10,6 +10,7 @@ import { ShopPage } from './pages/ShopPage'
 import { LeaderboardPage } from './pages/LeaderboardPage'
 import { StudyPage } from './pages/StudyPage'
 import { MessagesPage } from './pages/MessagesPage'
+import { CareerTreePage } from './pages/CareerTreePage'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { AdminCasesList } from './pages/admin/AdminCasesList'
 import { AdminCaseEditor } from './pages/admin/AdminCaseEditor'
@@ -51,6 +52,7 @@ function App() {
                     <Route path="leaderboard" element={<LeaderboardPage />} />
                     <Route path="study" element={<StudyPage />} />
                     <Route path="messages" element={<MessagesPage />} />
+                    <Route path="career" element={<CareerTreePage />} />
                 </Route>
 
                 {/* Admin Routes */}

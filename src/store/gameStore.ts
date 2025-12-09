@@ -29,20 +29,21 @@ export interface UserStats {
     totalStudyTime: number // in minutes
 }
 
-interface GameState {
+export interface GameState {
     // User data
     coins: number
     xp: number
     level: number
     streak: number
     lastLogin: string | null
+    unlockedProfessions: string[]
 
     // Life system
-    energy: number          // 0-100, starts at 100
-    hunger: number          // 0-100, starts at 0 (0=full, 100=starving)
-    reputation: number      // 0-5 stars, starts at 3
-    lastRestTime: number    // timestamp of last rest
-    lastHungerUpdate: number // timestamp for hunger increase
+    energy: number
+    hunger: number
+    reputation: number
+    lastRestTime: number
+    lastHungerUpdate: number
 
     // Study system
     isStudying: boolean
@@ -64,14 +65,17 @@ interface GameState {
     buyItem: (itemId: string, price: number) => boolean
     updateStats: (updates: Partial<UserStats>) => void
 
+    // New Action
+    unlockProfession: (id: string, levelReq: number, parentId?: string) => boolean
+
     // Life system actions
     drainEnergy: (amount: number) => void
     restoreEnergy: (amount: number) => void
     feedCharacter: (hungerRestore: number, energyBonus?: number) => void
     changeReputation: (delta: number) => void
-    rest: () => boolean // returns false if can't rest yet
-    canPlay: () => boolean // check if energy >= 40%
-    updateHunger: () => void // call periodically to increase hunger
+    rest: () => boolean
+    canPlay: () => boolean
+    updateHunger: () => void
 
     // Study actions
     startStudying: () => void
@@ -110,6 +114,7 @@ export const useGameStore = create<GameState>()(
             cases: [],
             totalScore: 0,
             ownedItems: [],
+            unlockedProfessions: ['academic'],
             stats: {
                 casesCompleted: 0,
                 quizzesTaken: 0,
@@ -206,6 +211,30 @@ export const useGameStore = create<GameState>()(
                     totalStudyTime: state.stats.totalStudyTime + (updates.totalStudyTime || 0),
                 }
             })),
+
+            unlockProfession: (id, levelReq, parentId) => {
+                const state = get()
+
+                // Check if already unlocked
+                if (state.unlockedProfessions.includes(id)) return true // Already unlocked is success
+
+                // Check requirements
+                if (state.level < levelReq) {
+                    useToastStore.getState().addToast(`Nível insuficiente! Requer nível ${levelReq}`, 'error')
+                    return false
+                }
+
+                if (parentId && !state.unlockedProfessions.includes(parentId)) {
+                    useToastStore.getState().addToast('Especialidade anterior bloqueada!', 'error')
+                    return false
+                }
+
+                set({
+                    unlockedProfessions: [...state.unlockedProfessions, id]
+                })
+                useToastStore.getState().addToast('Nova especialidade desbloqueada! 🎉', 'success')
+                return true
+            },
 
             // Life system actions
             drainEnergy: (amount) => set((state) => {

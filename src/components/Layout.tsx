@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, FileText, ShoppingCart, Trophy, Mail, Plus, Menu, X } from 'lucide-react';
+import { Home, FileText, ShoppingCart, Trophy, Mail, Plus, Menu, X, GraduationCap } from 'lucide-react';
 import clsx from 'clsx';
 import { useGameStore } from '../store/gameStore';
 import { useMessageStore } from '../store/messageStore';
@@ -11,12 +11,14 @@ export const Layout = () => {
     const { messages } = useMessageStore();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    const unreadCount = messages.filter(m => !m.read).length;
+    // Ensure messages exists before filtering (safe access)
+    const unreadCount = messages ? messages.filter(m => !m.read).length : 0;
 
     const navItems = [
         { icon: Home, label: 'Início', path: '/' },
         { icon: FileText, label: 'Quiz', path: '/quiz' },
         { icon: Plus, label: 'Casos', path: '/cases' },
+        { icon: GraduationCap, label: 'Carreira', path: '/career' },
         { icon: ShoppingCart, label: 'Loja', path: '/shop' },
         { icon: Trophy, label: 'Ranking', path: '/leaderboard' },
         { icon: Mail, label: 'Msgs', path: '/messages' },
