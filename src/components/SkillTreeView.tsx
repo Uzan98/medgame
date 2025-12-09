@@ -29,13 +29,13 @@ const SkillCard = ({
             whileTap={canUnlock ? { scale: 0.98 } : {}}
             onClick={canUnlock ? onUnlock : undefined}
             className={clsx(
-                "relative rounded-xl border-2 transition-all duration-300 cursor-pointer",
+                "relative rounded-xl border-2 transition-all duration-300",
                 isSmall ? "p-2" : "p-3",
                 isUnlocked
                     ? "bg-gradient-to-br from-cyan-900/60 to-blue-900/60 border-cyan-500/50 shadow-[0_0_15px_rgba(34,211,238,0.2)]"
                     : canUnlock
-                        ? "bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border-yellow-500/60 hover:border-yellow-400 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)]"
-                        : "bg-slate-900/60 border-slate-700/50 opacity-50 cursor-not-allowed"
+                        ? "bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border-yellow-500/60 hover:border-yellow-400 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)] cursor-pointer"
+                        : "bg-slate-900/60 border-slate-700/50 opacity-60"
             )}
         >
             {/* Icon + Title Row */}
@@ -97,7 +97,7 @@ const CategorySection = ({
     userLevel: number,
     onUnlock: (id: string, level: number, parentId?: string) => void
 }) => {
-    const [isExpanded, setIsExpanded] = useState(unlockedIds.includes(category.id));
+    const [isExpanded, setIsExpanded] = useState(false);
     const isUnlocked = unlockedIds.includes(category.id);
     const levelMet = userLevel >= category.levelRequired;
     const canUnlock = !isUnlocked && levelMet;
@@ -109,9 +109,9 @@ const CategorySection = ({
                 onClick={() => {
                     if (canUnlock) {
                         onUnlock(category.id, category.levelRequired, 'academic');
-                    } else {
-                        setIsExpanded(!isExpanded);
                     }
+                    // Always toggle expansion to preview sub-specialties
+                    setIsExpanded(!isExpanded);
                 }}
                 className={clsx(
                     "w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all",
@@ -119,7 +119,7 @@ const CategorySection = ({
                         ? "bg-gradient-to-r from-cyan-900/50 to-blue-900/50 border-cyan-500/40"
                         : canUnlock
                             ? "bg-gradient-to-r from-yellow-900/40 to-amber-900/40 border-yellow-500/50 hover:border-yellow-400"
-                            : "bg-slate-900/50 border-slate-700/50 opacity-60"
+                            : "bg-slate-900/50 border-slate-700/50"
                 )}
                 whileHover={{ scale: 1.01 }}
             >
@@ -140,7 +140,7 @@ const CategorySection = ({
                     </div>
                 </div>
 
-                {isUnlocked && category.children && (
+                {category.children && (
                     <ChevronDown
                         size={20}
                         className={clsx("text-slate-400 transition-transform", isExpanded && "rotate-180")}
@@ -148,9 +148,9 @@ const CategorySection = ({
                 )}
             </motion.button>
 
-            {/* Sub-specialties Grid */}
+            {/* Sub-specialties Grid - Always expandable to preview */}
             <AnimatePresence>
-                {isExpanded && isUnlocked && category.children && (
+                {isExpanded && category.children && (
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
@@ -158,10 +158,20 @@ const CategorySection = ({
                         className="overflow-hidden"
                     >
                         <div className="pt-3 pl-6 border-l-2 border-slate-700/50 ml-5 mt-2">
+                            {/* Show locked message if category not unlocked */}
+                            {!isUnlocked && (
+                                <div className="mb-3 p-2 rounded-lg bg-slate-800/50 border border-slate-700/50 text-center">
+                                    <p className="text-[10px] text-slate-400">
+                                        🔒 Desbloqueie <span className="text-cyan-400">{category.label}</span> para acessar estas especialidades
+                                    </p>
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                                 {category.children.map(subSpec => {
                                     const subIsUnlocked = unlockedIds.includes(subSpec.id);
                                     const subLevelMet = userLevel >= subSpec.levelRequired;
+                                    // Can only unlock if parent category is unlocked
                                     const subCanUnlock = !subIsUnlocked && isUnlocked && subLevelMet;
 
                                     return (
@@ -180,11 +190,13 @@ const CategorySection = ({
                             {/* Show super-specialties if any sub has children */}
                             {category.children.filter(s => s.children && s.children.length > 0).map(subWithChildren => {
                                 const parentUnlocked = unlockedIds.includes(subWithChildren.id);
-                                if (!parentUnlocked) return null;
 
                                 return (
                                     <div key={subWithChildren.id} className="mt-3 pt-2 border-t border-slate-700/30">
-                                        <p className="text-[10px] text-slate-500 mb-2">{subWithChildren.label} →</p>
+                                        <p className="text-[10px] text-slate-500 mb-2 flex items-center gap-1">
+                                            {subWithChildren.label}
+                                            {parentUnlocked ? <span className="text-cyan-400">→</span> : <Lock size={10} className="text-slate-600" />}
+                                        </p>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                                             {subWithChildren.children!.map(superSpec => {
                                                 const superIsUnlocked = unlockedIds.includes(superSpec.id);

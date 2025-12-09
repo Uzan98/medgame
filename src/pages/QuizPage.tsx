@@ -170,24 +170,33 @@ export const QuizPage: React.FC = () => {
     }, []);
 
     // Award XP and coins when quiz ends
+    const hasAwardedRef = useRef(false);
     useEffect(() => {
-        if (gameState === 'result') {
+        if (gameState === 'result' && !hasAwardedRef.current) {
+            hasAwardedRef.current = true;
             drainEnergy(10);
+
+            const correctAnswers = results.filter(r => r.correct).length;
+
+            // Always count the quiz, even with 0 score
+            updateStats({
+                quizzesTaken: 1,
+                totalCorrectAnswers: correctAnswers,
+            });
 
             if (score > 0) {
                 const xpEarned = score * 10; // 10 XP per point
                 const coinsEarned = score * 2; // 2 coins per point
-                const correctAnswers = results.filter(r => r.correct).length;
-
                 addXP(xpEarned);
                 addCoins(coinsEarned);
-                updateStats({
-                    quizzesTaken: 1, // Will be added to existing
-                    totalCorrectAnswers: correctAnswers,
-                });
             }
         }
-    }, [gameState]);
+
+        // Reset the ref when starting a new game
+        if (gameState === 'start') {
+            hasAwardedRef.current = false;
+        }
+    }, [gameState, score, results, drainEnergy, updateStats, addXP, addCoins]);
 
 
     const renderStart = () => (

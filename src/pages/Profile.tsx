@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Trophy, Target, Clock, Flame, Award, Settings, ChevronRight, Star, Zap, Shield, Edit2, Moon } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Target, Flame, Award, ChevronRight, Star, Zap, Shield, Edit2, Moon, BookOpen, Coins, TrendingUp } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { useToastStore } from '../store/toastStore';
 import { shopItems } from '../lib/shopItems';
@@ -12,26 +12,12 @@ interface Achievement {
     name: string;
     description: string;
     icon: string;
-    unlocked: boolean;
-    progress?: number;
-    total?: number;
+    progress: number;
+    total: number;
 }
 
-const achievements: Achievement[] = [
-    { id: 'first-case', name: 'Primeiro Diagnóstico', description: 'Complete seu primeiro caso clínico', icon: '🩺', unlocked: true },
-    { id: 'quiz-master', name: 'Mestre do Quiz', description: 'Acerte 10 diagnósticos no quiz', icon: '🎯', unlocked: true },
-    { id: 'perfect-score', name: 'Nota Perfeita', description: 'Acerte todas as questões de um caso', icon: '⭐', unlocked: false, progress: 0, total: 1 },
-    { id: 'speed-demon', name: 'Velocista', description: 'Acerte com 0 pistas no quiz', icon: '⚡', unlocked: false, progress: 0, total: 1 },
-    { id: 'streak-5', name: 'Sequência de 5', description: 'Mantenha um streak de 5 dias', icon: '🔥', unlocked: true },
-    { id: 'streak-30', name: 'Mês Dedicado', description: 'Mantenha um streak de 30 dias', icon: '📅', unlocked: false, progress: 5, total: 30 },
-    { id: 'cardio-expert', name: 'Expert Cardiologia', description: 'Complete 10 casos de cardiologia', icon: '❤️', unlocked: false, progress: 3, total: 10 },
-    { id: 'neuro-expert', name: 'Expert Neurologia', description: 'Complete 10 casos de neurologia', icon: '🧠', unlocked: false, progress: 1, total: 10 },
-    { id: 'collector', name: 'Colecionador', description: 'Compre 10 itens na loja', icon: '🛒', unlocked: false, progress: 0, total: 10 },
-    { id: 'rich', name: 'Rico', description: 'Acumule 5000 MediMoedas', icon: '💰', unlocked: false, progress: 1300, total: 5000 },
-];
-
 export const Profile: React.FC = () => {
-    const { coins, xp, level, streak, stats, ownedItems, rest } = useGameStore();
+    const { coins, xp, level, streak, stats, ownedItems, rest, unlockedProfessions } = useGameStore();
     const [activeTab, setActiveTab] = useState<Tab>('stats');
 
     const handleRest = () => {
@@ -47,16 +33,156 @@ export const Profile: React.FC = () => {
     const xpProgress = (xpInCurrentLevel / 1000) * 100;
 
     const ownedItemsData = shopItems.filter(item => ownedItems.includes(item.id));
-    const unlockedAchievements = achievements.filter(a => a.unlocked).length;
 
+    // Dynamic achievements based on real stats
+    const achievements: Achievement[] = useMemo(() => [
+        {
+            id: 'first-case',
+            name: 'Primeiro Diagnóstico',
+            description: 'Complete seu primeiro caso clínico',
+            icon: '🩺',
+            progress: Math.min(stats.casesCompleted, 1),
+            total: 1
+        },
+        {
+            id: 'case-master-10',
+            name: 'Residente',
+            description: 'Complete 10 casos clínicos',
+            icon: '🏥',
+            progress: Math.min(stats.casesCompleted, 10),
+            total: 10
+        },
+        {
+            id: 'case-master-50',
+            name: 'Especialista',
+            description: 'Complete 50 casos clínicos',
+            icon: '👨‍⚕️',
+            progress: Math.min(stats.casesCompleted, 50),
+            total: 50
+        },
+        {
+            id: 'quiz-starter',
+            name: 'Mestre do Quiz',
+            description: 'Complete 10 quizzes',
+            icon: '🎯',
+            progress: Math.min(stats.quizzesTaken, 10),
+            total: 10
+        },
+        {
+            id: 'quiz-expert',
+            name: 'Expert em Quiz',
+            description: 'Complete 50 quizzes',
+            icon: '⚡',
+            progress: Math.min(stats.quizzesTaken, 50),
+            total: 50
+        },
+        {
+            id: 'correct-50',
+            name: 'Cérebro Afiado',
+            description: 'Acerte 50 questões',
+            icon: '🧠',
+            progress: Math.min(stats.totalCorrectAnswers, 50),
+            total: 50
+        },
+        {
+            id: 'correct-200',
+            name: 'Gênio Médico',
+            description: 'Acerte 200 questões',
+            icon: '🌟',
+            progress: Math.min(stats.totalCorrectAnswers, 200),
+            total: 200
+        },
+        {
+            id: 'streak-5',
+            name: 'Sequência de 5',
+            description: 'Mantenha um streak de 5 dias',
+            icon: '🔥',
+            progress: Math.min(stats.bestStreak, 5),
+            total: 5
+        },
+        {
+            id: 'streak-30',
+            name: 'Mês Dedicado',
+            description: 'Mantenha um streak de 30 dias',
+            icon: '📅',
+            progress: Math.min(stats.bestStreak, 30),
+            total: 30
+        },
+        {
+            id: 'rich-1000',
+            name: 'Poupador',
+            description: 'Acumule 1000 MediMoedas',
+            icon: '💰',
+            progress: Math.min(coins, 1000),
+            total: 1000
+        },
+        {
+            id: 'rich-5000',
+            name: 'Rico',
+            description: 'Acumule 5000 MediMoedas',
+            icon: '💎',
+            progress: Math.min(coins, 5000),
+            total: 5000
+        },
+        {
+            id: 'level-5',
+            name: 'Progredindo',
+            description: 'Alcance o nível 5',
+            icon: '📈',
+            progress: Math.min(level, 5),
+            total: 5
+        },
+        {
+            id: 'level-10',
+            name: 'Veterano',
+            description: 'Alcance o nível 10',
+            icon: '🏆',
+            progress: Math.min(level, 10),
+            total: 10
+        },
+        {
+            id: 'collector-5',
+            name: 'Colecionador',
+            description: 'Compre 5 itens na loja',
+            icon: '🛒',
+            progress: Math.min(ownedItems.length, 5),
+            total: 5
+        },
+        {
+            id: 'specialty-3',
+            name: 'Multiespecialista',
+            description: 'Desbloqueie 3 especialidades',
+            icon: '🎓',
+            progress: Math.min(unlockedProfessions.length, 3),
+            total: 3
+        },
+        {
+            id: 'study-60',
+            name: 'Estudioso',
+            description: 'Estude por 60 minutos',
+            icon: '📚',
+            progress: Math.min(stats.totalStudyTime, 60),
+            total: 60
+        },
+    ], [stats, coins, level, ownedItems, unlockedProfessions]);
+
+    const unlockedAchievements = achievements.filter(a => a.progress >= a.total).length;
+
+    // Enhanced stat cards with better styling
     const statCards = [
-        { icon: Target, label: 'Casos Completos', value: stats.casesCompleted, color: 'cyan' },
-        { icon: Zap, label: 'Quizzes', value: stats.quizzesTaken, color: 'yellow' },
-        { icon: Star, label: 'Acertos', value: stats.totalCorrectAnswers, color: 'emerald' },
-        { icon: Flame, label: 'Melhor Streak', value: stats.bestStreak, color: 'orange' },
-        { icon: Clock, label: 'Tempo Jogado', value: `${stats.totalPlayTime}min`, color: 'purple' },
-        { icon: Award, label: 'Conquistas', value: `${unlockedAchievements}/${achievements.length}`, color: 'pink' },
+        { icon: Target, label: 'Casos Completos', value: stats.casesCompleted, color: 'bg-cyan-500/20 text-cyan-400', bgGlow: 'shadow-cyan-500/20' },
+        { icon: Zap, label: 'Quizzes Feitos', value: stats.quizzesTaken, color: 'bg-yellow-500/20 text-yellow-400', bgGlow: 'shadow-yellow-500/20' },
+        { icon: Star, label: 'Respostas Certas', value: stats.totalCorrectAnswers, color: 'bg-emerald-500/20 text-emerald-400', bgGlow: 'shadow-emerald-500/20' },
+        { icon: Flame, label: 'Melhor Streak', value: stats.bestStreak + ' dias', color: 'bg-orange-500/20 text-orange-400', bgGlow: 'shadow-orange-500/20' },
+        { icon: BookOpen, label: 'Tempo Estudado', value: stats.totalStudyTime + ' min', color: 'bg-purple-500/20 text-purple-400', bgGlow: 'shadow-purple-500/20' },
+        { icon: TrendingUp, label: 'Nível Atual', value: 'Lv. ' + level, color: 'bg-pink-500/20 text-pink-400', bgGlow: 'shadow-pink-500/20' },
+        { icon: Coins, label: 'Moedas Totais', value: coins, color: 'bg-amber-500/20 text-amber-400', bgGlow: 'shadow-amber-500/20' },
+        { icon: Award, label: 'Conquistas', value: `${unlockedAchievements}/${achievements.length}`, color: 'bg-indigo-500/20 text-indigo-400', bgGlow: 'shadow-indigo-500/20' },
     ];
+
+    // Calculate accuracy rate
+    const totalQuestions = stats.quizzesTaken * 5; // Assuming 5 questions per quiz average
+    const accuracyRate = totalQuestions > 0 ? Math.round((stats.totalCorrectAnswers / totalQuestions) * 100) : 0;
 
     return (
         <div className="h-full flex flex-col overflow-hidden">
@@ -82,7 +208,7 @@ export const Profile: React.FC = () => {
                         <div className="flex items-center gap-2 mb-1">
                             <h1 className="text-lg lg:text-2xl font-bold text-white truncate">Dr. Usuário</h1>
                             <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-400 text-[10px] lg:text-xs rounded-full border border-cyan-500/30">
-                                Cardiologia
+                                {unlockedProfessions.length > 1 ? unlockedProfessions[unlockedProfessions.length - 1].replace(/-/g, ' ') : 'Acadêmico'}
                             </span>
                         </div>
 
@@ -110,9 +236,9 @@ export const Profile: React.FC = () => {
                                 <Flame className="w-4 h-4" />
                                 <span className="font-bold">{streak} dias</span>
                             </div>
-                            <div className="flex items-center gap-1 text-purple-400">
-                                <Trophy className="w-4 h-4" />
-                                <span className="font-bold">{xp} XP</span>
+                            <div className="flex items-center gap-1 text-emerald-400">
+                                <Target className="w-4 h-4" />
+                                <span className="font-bold">{accuracyRate}% acerto</span>
                             </div>
                         </div>
 
@@ -158,22 +284,21 @@ export const Profile: React.FC = () => {
             {/* Content */}
             <div className="flex-1 overflow-y-auto min-h-0 pb-4">
                 {activeTab === 'stats' && (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                         {statCards.map((stat, i) => {
                             const Icon = stat.icon;
                             return (
                                 <div
                                     key={i}
-                                    className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-center"
+                                    className={clsx(
+                                        "bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-center shadow-lg",
+                                        stat.bgGlow
+                                    )}
                                 >
                                     <div className={clsx(
                                         'w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center',
-                                        `bg-${stat.color}-500/20 text-${stat.color}-400`
-                                    )}
-                                        style={{
-                                            backgroundColor: `var(--color-${stat.color}-500, rgba(34,211,238,0.2))`,
-                                        }}
-                                    >
+                                        stat.color
+                                    )}>
                                         <Icon className="w-5 h-5" />
                                     </div>
                                     <div className="text-xl lg:text-2xl font-bold text-white">{stat.value}</div>
@@ -185,94 +310,88 @@ export const Profile: React.FC = () => {
                 )}
 
                 {activeTab === 'items' && (
-                    <div>
+                    <div className="space-y-3">
                         {ownedItemsData.length === 0 ? (
-                            <div className="text-center py-12">
-                                <Shield className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                                <p className="text-slate-400">Nenhum item ainda</p>
-                                <p className="text-sm text-slate-500">Visite a loja para comprar itens!</p>
+                            <div className="text-center py-12 text-slate-400">
+                                <Shield className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                                <p>Nenhum item adquirido ainda.</p>
+                                <p className="text-sm">Visite a Loja para comprar itens!</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                                {ownedItemsData.map((item) => (
-                                    <div
-                                        key={item.id}
-                                        className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-center"
-                                    >
-                                        <div className="text-3xl mb-2">{item.icon}</div>
-                                        <div className="font-bold text-white text-sm">{item.name}</div>
-                                        <div className="text-[10px] text-slate-400 capitalize">{item.category}</div>
+                            ownedItemsData.map((item) => (
+                                <div
+                                    key={item.id}
+                                    className="flex items-center gap-4 bg-slate-800/50 border border-slate-700 rounded-xl p-4"
+                                >
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 border border-cyan-500/30 flex items-center justify-center text-2xl">
+                                        {item.icon}
                                     </div>
-                                ))}
-                            </div>
+                                    <div className="flex-1">
+                                        <div className="font-bold text-white">{item.name}</div>
+                                        <div className="text-xs text-slate-400">{item.description}</div>
+                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-slate-500" />
+                                </div>
+                            ))
                         )}
                     </div>
                 )}
 
                 {activeTab === 'achievements' && (
                     <div className="space-y-3">
-                        {achievements.map((achievement) => (
-                            <div
-                                key={achievement.id}
-                                className={clsx(
-                                    'flex items-center gap-4 p-4 rounded-xl border transition-all',
-                                    achievement.unlocked
-                                        ? 'bg-emerald-500/10 border-emerald-500/30'
-                                        : 'bg-slate-800/50 border-slate-700 opacity-60'
-                                )}
-                            >
-                                <div className={clsx(
-                                    'w-12 h-12 rounded-xl flex items-center justify-center text-2xl',
-                                    achievement.unlocked ? 'bg-emerald-500/20' : 'bg-slate-700 grayscale'
-                                )}>
-                                    {achievement.icon}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                        <h3 className={clsx(
-                                            'font-bold text-sm',
-                                            achievement.unlocked ? 'text-white' : 'text-slate-400'
+                        {achievements.map((achievement) => {
+                            const isUnlocked = achievement.progress >= achievement.total;
+                            const progressPercent = (achievement.progress / achievement.total) * 100;
+                            return (
+                                <div
+                                    key={achievement.id}
+                                    className={clsx(
+                                        "flex items-center gap-4 rounded-xl p-4 border transition-all",
+                                        isUnlocked
+                                            ? "bg-gradient-to-r from-cyan-900/30 to-emerald-900/30 border-cyan-500/30 shadow-[0_0_15px_rgba(34,211,238,0.1)]"
+                                            : "bg-slate-800/50 border-slate-700"
+                                    )}
+                                >
+                                    <div className={clsx(
+                                        "w-12 h-12 rounded-xl flex items-center justify-center text-2xl border",
+                                        isUnlocked
+                                            ? "bg-cyan-500/20 border-cyan-500/50"
+                                            : "bg-slate-700/50 border-slate-600 grayscale opacity-70"
+                                    )}>
+                                        {achievement.icon}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className={clsx(
+                                            "font-bold",
+                                            isUnlocked ? "text-white" : "text-slate-400"
                                         )}>
                                             {achievement.name}
-                                        </h3>
-                                        {achievement.unlocked && (
-                                            <span className="text-emerald-400 text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full">
-                                                ✓ Desbloqueado
-                                            </span>
+                                        </div>
+                                        <div className="text-xs text-slate-500 mb-1">{achievement.description}</div>
+                                        {!isUnlocked && (
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-cyan-500 transition-all"
+                                                        style={{ width: `${progressPercent}%` }}
+                                                    />
+                                                </div>
+                                                <span className="text-[10px] text-slate-500">
+                                                    {achievement.progress}/{achievement.total}
+                                                </span>
+                                            </div>
                                         )}
                                     </div>
-                                    <p className="text-[10px] lg:text-xs text-slate-400">{achievement.description}</p>
-
-                                    {!achievement.unlocked && achievement.progress !== undefined && (
-                                        <div className="mt-2">
-                                            <div className="flex justify-between text-[10px] text-slate-500 mb-1">
-                                                <span>Progresso</span>
-                                                <span>{achievement.progress}/{achievement.total}</span>
-                                            </div>
-                                            <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-cyan-500"
-                                                    style={{ width: `${(achievement.progress! / achievement.total!) * 100}%` }}
-                                                />
-                                            </div>
+                                    {isUnlocked && (
+                                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                                            ✓
                                         </div>
                                     )}
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
-            </div>
-
-            {/* Settings Button */}
-            <div className="shrink-0 pt-4 border-t border-slate-800">
-                <button className="w-full flex items-center justify-between p-4 bg-slate-800/50 rounded-xl border border-slate-700 hover:border-slate-600 transition-colors">
-                    <div className="flex items-center gap-3">
-                        <Settings className="w-5 h-5 text-slate-400" />
-                        <span className="text-white font-medium">Configurações</span>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-slate-600" />
-                </button>
             </div>
         </div>
     );

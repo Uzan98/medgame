@@ -37,6 +37,9 @@ export interface GameState {
     streak: number
     lastLogin: string | null
     unlockedProfessions: string[]
+    unlockedByLevel: Record<number, string[]> // Track unlocks per level tier
+    isPremium: boolean
+    hasSeenTutorial: boolean
 
     // Life system
     energy: number
@@ -115,6 +118,9 @@ export const useGameStore = create<GameState>()(
             totalScore: 0,
             ownedItems: [],
             unlockedProfessions: ['academic'],
+            unlockedByLevel: { 1: ['academic'] }, // Track by level
+            isPremium: false, // Free tier by default
+            hasSeenTutorial: false, // Show tutorial on first visit
             stats: {
                 casesCompleted: 0,
                 quizzesTaken: 0,
@@ -216,21 +222,36 @@ export const useGameStore = create<GameState>()(
                 const state = get()
 
                 // Check if already unlocked
-                if (state.unlockedProfessions.includes(id)) return true // Already unlocked is success
+                if (state.unlockedProfessions.includes(id)) return true
 
-                // Check requirements
+                // Check level requirements
                 if (state.level < levelReq) {
                     useToastStore.getState().addToast(`Nível insuficiente! Requer nível ${levelReq}`, 'error')
                     return false
                 }
 
+                // Check parent requirement
                 if (parentId && !state.unlockedProfessions.includes(parentId)) {
                     useToastStore.getState().addToast('Especialidade anterior bloqueada!', 'error')
                     return false
                 }
 
+                // Premium check: Free users can only unlock 1 per level tier
+                const unlocksAtThisLevel = state.unlockedByLevel[levelReq] || []
+                if (!state.isPremium && unlocksAtThisLevel.length >= 1) {
+                    useToastStore.getState().addToast('Limite gratuito atingido! Seja Premium para desbloquear mais especialidades neste nível 👑', 'warning')
+                    return false
+                }
+
+                // Perform unlock
+                const newUnlockedByLevel = {
+                    ...state.unlockedByLevel,
+                    [levelReq]: [...unlocksAtThisLevel, id]
+                }
+
                 set({
-                    unlockedProfessions: [...state.unlockedProfessions, id]
+                    unlockedProfessions: [...state.unlockedProfessions, id],
+                    unlockedByLevel: newUnlockedByLevel
                 })
                 useToastStore.getState().addToast('Nova especialidade desbloqueada! 🎉', 'success')
                 return true

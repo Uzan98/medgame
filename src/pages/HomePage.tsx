@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Activity, Trophy, Target, Lock, Flame, Zap, Star } from 'lucide-react';
+import { ChevronRight, Activity, Trophy, Target, Lock, Flame, Zap, Star, Info } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { sampleCases } from '../lib/cases';
 import { useAdminStore } from '../store/adminStore';
 import { shopItems } from '../lib/shopItems';
+import { LifeSystemInfo } from '../components/LifeSystemInfo';
 import clsx from 'clsx';
 
 export const HomePage: React.FC = () => {
     const { level, xp, coins, streak, stats, energy, hunger, reputation } = useGameStore();
     const { customCases, customQuizzes } = useAdminStore();
+    const [showLifeInfo, setShowLifeInfo] = useState(false);
 
     // Merge cases and get unlocked ones
     const allCases = [...sampleCases, ...customCases];
@@ -33,6 +35,8 @@ export const HomePage: React.FC = () => {
 
     return (
         <div className="min-h-full flex flex-col gap-4 lg:gap-6">
+            {/* Life System Info Modal */}
+            <LifeSystemInfo isOpen={showLifeInfo} onClose={() => setShowLifeInfo(false)} />
 
             {/* Mobile Avatar Section - Only visible on small screens */}
             <div className="md:hidden bg-slate-800/50 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-4 shadow-[0_0_20px_rgba(0,0,0,0.3)] relative overflow-hidden">
@@ -64,8 +68,18 @@ export const HomePage: React.FC = () => {
 
                     {/* Stats */}
                     <div className="flex-1 min-w-0">
-                        {/* Status Bars */}
-                        <div className="space-y-2 mb-3">
+                        {/* Status Bars Header with Info Button */}
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-slate-400 font-medium">Status</span>
+                            <button
+                                onClick={() => setShowLifeInfo(true)}
+                                className="w-5 h-5 rounded-full bg-slate-700/50 border border-slate-600 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-all"
+                                title="Como funciona?"
+                            >
+                                <Info size={12} />
+                            </button>
+                        </div>
+                        <div className="space-y-2">
                             {/* Energy */}
                             <div>
                                 <div className="flex justify-between text-[10px] mb-0.5">

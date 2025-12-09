@@ -16,13 +16,15 @@ import { AdminCasesList } from './pages/admin/AdminCasesList'
 import { AdminCaseEditor } from './pages/admin/AdminCaseEditor'
 import { AdminQuizzesList } from './pages/admin/AdminQuizzesList'
 import { AdminQuizEditor } from './pages/admin/AdminQuizEditor'
+import { TutorialOverlay } from './components/TutorialOverlay'
 
 import { useGameStore } from './store/gameStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ToastContainer } from './components/ToastContainer';
 
 function App() {
-    const { updateHunger } = useGameStore();
+    const { updateHunger, hasSeenTutorial } = useGameStore();
+    const [showTutorial, setShowTutorial] = useState(false);
 
     // Global Hunger Timer
     useEffect(() => {
@@ -37,12 +39,30 @@ function App() {
         return () => clearInterval(interval);
     }, [updateHunger]);
 
+    // Show tutorial on first visit
+    useEffect(() => {
+        if (!hasSeenTutorial) {
+            // Small delay to let the UI render first
+            const timer = setTimeout(() => setShowTutorial(true), 500);
+            return () => clearTimeout(timer);
+        }
+    }, [hasSeenTutorial]);
+
+    const handleCloseTutorial = () => {
+        setShowTutorial(false);
+        useGameStore.setState({ hasSeenTutorial: true });
+    };
+
+    // Export a way to trigger tutorial from anywhere
+    (window as any).showTutorial = () => setShowTutorial(true);
+
     return (
         <Router>
             <ToastContainer />
+            <TutorialOverlay isVisible={showTutorial} onClose={handleCloseTutorial} />
             <Routes>
                 {/* Main App Routes */}
-                <Route path="/" element={<Layout />}>
+                <Route path="/" element={<Layout onShowTutorial={() => setShowTutorial(true)} />}>
                     <Route index element={<HomePage />} />
                     <Route path="cases" element={<CaseCatalog />} />
                     <Route path="game/:caseId" element={<GameInterface />} />
@@ -71,3 +91,4 @@ function App() {
 }
 
 export default App
+

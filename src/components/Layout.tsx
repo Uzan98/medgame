@@ -1,11 +1,15 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, FileText, ShoppingCart, Trophy, Mail, Plus, Menu, X, GraduationCap } from 'lucide-react';
+import { Home, FileText, ShoppingCart, Trophy, Mail, Plus, Menu, X, GraduationCap, HelpCircle, BookOpen } from 'lucide-react';
 import clsx from 'clsx';
 import { useGameStore } from '../store/gameStore';
 import { useMessageStore } from '../store/messageStore';
 import { useState } from 'react';
 
-export const Layout = () => {
+interface LayoutProps {
+    onShowTutorial?: () => void;
+}
+
+export const Layout = ({ onShowTutorial }: LayoutProps) => {
     const { pathname } = useLocation();
     const { coins, xp, level } = useGameStore();
     const { messages } = useMessageStore();
@@ -15,13 +19,13 @@ export const Layout = () => {
     const unreadCount = messages ? messages.filter(m => !m.read).length : 0;
 
     const navItems = [
-        { icon: Home, label: 'Início', path: '/' },
-        { icon: FileText, label: 'Quiz', path: '/quiz' },
-        { icon: Plus, label: 'Casos', path: '/cases' },
-        { icon: GraduationCap, label: 'Carreira', path: '/career' },
-        { icon: ShoppingCart, label: 'Loja', path: '/shop' },
-        { icon: Trophy, label: 'Ranking', path: '/leaderboard' },
-        { icon: Mail, label: 'Msgs', path: '/messages' },
+        { icon: Home, label: 'Início', path: '/', tutorialId: 'nav-home' },
+        { icon: FileText, label: 'Quiz', path: '/quiz', tutorialId: 'nav-quiz' },
+        { icon: Plus, label: 'Casos', path: '/cases', tutorialId: 'nav-cases' },
+        { icon: GraduationCap, label: 'Carreira', path: '/career', tutorialId: 'nav-career' },
+        { icon: ShoppingCart, label: 'Loja', path: '/shop', tutorialId: 'nav-shop' },
+        { icon: Trophy, label: 'Ranking', path: '/leaderboard', tutorialId: 'nav-ranking' },
+        { icon: BookOpen, label: 'Estudo', path: '/study', tutorialId: 'nav-study' },
     ];
 
     const xpInCurrentLevel = xp % 1000;
@@ -55,7 +59,7 @@ export const Layout = () => {
                 </div>
 
                 {/* Nav Items */}
-                <nav className="flex-1 flex flex-col w-full space-y-4 lg:space-y-6">
+                <nav className="flex-1 flex flex-col w-full space-y-3 lg:space-y-4">
                     {navItems.map((item) => {
                         const isActive = pathname === item.path;
                         const Icon = item.icon;
@@ -65,6 +69,7 @@ export const Layout = () => {
                                 key={item.path}
                                 to={item.path}
                                 onClick={() => setSidebarOpen(false)}
+                                data-tutorial={item.tutorialId}
                                 className={clsx(
                                     "flex flex-col items-center justify-center py-2 relative transition-all duration-300 group",
                                     isActive ? "text-cyan-400" : "text-slate-400 hover:text-cyan-200"
@@ -92,7 +97,7 @@ export const Layout = () => {
             {/* Main Content */}
             <div className="flex-1 flex flex-col z-10 overflow-hidden w-full">
                 {/* Top Header */}
-                <header className="h-16 lg:h-20 flex items-center justify-between px-4 lg:px-8 border-b border-cyan-500/20 bg-slate-900/30 shrink-0">
+                <header className="h-16 lg:h-20 flex items-center justify-between px-4 lg:px-8 border-b border-cyan-500/20 bg-slate-900/30 shrink-0" data-tutorial="stats">
                     {/* Mobile Menu Button */}
                     <button
                         className="lg:hidden w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white"
@@ -127,8 +132,33 @@ export const Layout = () => {
                         <div className="w-5 h-5 lg:w-6 lg:h-6 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 text-xs lg:text-sm">+</div>
                     </Link>
 
+                    {/* Messages */}
+                    <Link
+                        to="/messages"
+                        className="relative w-8 h-8 lg:w-10 lg:h-10 flex items-center justify-center text-slate-400 hover:text-cyan-400 transition-colors rounded-lg hover:bg-slate-800/50"
+                        data-tutorial="nav-messages"
+                    >
+                        <Mail className="w-5 h-5 lg:w-6 lg:h-6" />
+                        {unreadCount > 0 && (
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[8px] font-bold text-white shadow shadow-red-500/50 animate-pulse">
+                                {unreadCount}
+                            </div>
+                        )}
+                    </Link>
+
+                    {/* Help Button */}
+                    {onShowTutorial && (
+                        <button
+                            onClick={onShowTutorial}
+                            className="w-8 h-8 lg:w-10 lg:h-10 flex items-center justify-center text-slate-400 hover:text-cyan-400 transition-colors rounded-lg hover:bg-slate-800/50"
+                            title="Ver tutorial"
+                        >
+                            <HelpCircle className="w-5 h-5 lg:w-6 lg:h-6" />
+                        </button>
+                    )}
+
                     {/* User Profile */}
-                    <Link to="/profile" className="flex items-center space-x-2 lg:space-x-3 hover:opacity-80 transition-opacity">
+                    <Link to="/profile" className="flex items-center space-x-2 lg:space-x-3 hover:opacity-80 transition-opacity" data-tutorial="avatar">
                         <div className="text-right hidden md:block">
                             <div className="text-xs lg:text-sm font-bold text-white">Dr. Usuário</div>
                             <div className="text-[10px] lg:text-xs text-slate-400">Cardiologia</div>
