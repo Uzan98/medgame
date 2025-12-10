@@ -255,6 +255,17 @@ export const HomePage: React.FC = () => {
 
                         {/* Status Bars */}
                         <div className="mt-3 w-56 lg:w-64 space-y-2">
+                            {/* Header with info button */}
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs text-slate-400 font-medium">Status</span>
+                                <button
+                                    onClick={() => setShowLifeInfo(true)}
+                                    className="w-5 h-5 rounded-full bg-slate-700/50 border border-slate-600 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-all"
+                                    title="Como funciona?"
+                                >
+                                    <Info size={12} />
+                                </button>
+                            </div>
                             {/* Energy */}
                             <div>
                                 <div className="flex justify-between text-xs mb-1">

@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
-import { ShoppingBag, Zap, Sparkles, Package, ChevronRight, Check, X, Coins } from 'lucide-react';
+import { ShoppingBag, Zap, Sparkles, Package, ChevronRight, Check, X, Coins, UtensilsCrossed } from 'lucide-react';
 import { shopItems, ShopItemData, rarityColors, rarityLabels } from '../lib/shopItems';
 import { useGameStore } from '../store/gameStore';
+import { useToastStore } from '../store/toastStore';
 import clsx from 'clsx';
 
-type Category = 'all' | 'powerup' | 'cosmetic' | 'content';
+type Category = 'all' | 'powerup' | 'cosmetic' | 'content' | 'food';
 
 const categoryInfo = {
     all: { label: 'Todos', icon: ShoppingBag, color: 'cyan' },
     powerup: { label: 'Power-ups', icon: Zap, color: 'yellow' },
     cosmetic: { label: 'Cosméticos', icon: Sparkles, color: 'purple' },
     content: { label: 'Conteúdo', icon: Package, color: 'emerald' },
+    food: { label: 'Comida', icon: UtensilsCrossed, color: 'orange' },
 };
 
 export const ShopPage: React.FC = () => {
-    const { coins, ownedItems, buyItem } = useGameStore();
+    const { coins, ownedItems, buyItem, spendCoins, feedCharacter } = useGameStore();
     const [category, setCategory] = useState<Category>('all');
     const [selectedItem, setSelectedItem] = useState<ShopItemData | null>(null);
     const [showPurchaseModal, setShowPurchaseModal] = useState(false);
@@ -33,6 +35,26 @@ export const ShopPage: React.FC = () => {
     const confirmPurchase = () => {
         if (!selectedItem) return;
 
+        // Handle food items as consumables (don't add to inventory)
+        if (selectedItem.category === 'food') {
+            if (coins >= selectedItem.price) {
+                spendCoins(selectedItem.price);
+                feedCharacter(selectedItem.hungerRestore || 0, selectedItem.energyBonus || 0);
+                useToastStore.getState().addToast(`Você comeu ${selectedItem.name}! 🍽️`, 'success');
+                setPurchaseResult('success');
+                setTimeout(() => {
+                    setShowPurchaseModal(false);
+                    setSelectedItem(null);
+                    setPurchaseResult(null);
+                }, 1500);
+            } else {
+                useToastStore.getState().addToast('Moedas insuficientes! 💸', 'error');
+                setPurchaseResult('failed');
+            }
+            return;
+        }
+
+        // Handle regular items
         const success = buyItem(selectedItem.id, selectedItem.price);
         setPurchaseResult(success ? 'success' : 'failed');
 

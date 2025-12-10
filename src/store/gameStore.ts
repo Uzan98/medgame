@@ -199,10 +199,14 @@ export const useGameStore = create<GameState>()(
                 const state = get()
                 if (state.coins >= price && !state.ownedItems.includes(itemId)) {
                     set({
+                        coins: state.coins - price,
                         ownedItems: [...state.ownedItems, itemId]
                     })
                     useToastStore.getState().addToast('Item comprado com sucesso! 🛍️', 'success')
                     return true
+                }
+                if (state.coins < price) {
+                    useToastStore.getState().addToast('Moedas insuficientes! 💸', 'error')
                 }
                 return false
             },
