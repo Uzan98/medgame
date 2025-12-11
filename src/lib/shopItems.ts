@@ -209,6 +209,78 @@ export const shopItems: ShopItemData[] = [
         rarity: 'epico',
         hungerRestore: 100,
         energyBonus: 30
+    },
+    {
+        id: 'food-energy-drink',
+        name: 'Energético',
+        description: 'Bebida energética para despertar!',
+        price: 40,
+        category: 'food',
+        icon: '🥤',
+        color: 'cyan',
+        rarity: 'comum',
+        hungerRestore: 0,
+        energyBonus: 25
+    },
+    {
+        id: 'food-sandwich',
+        name: 'Sanduíche Natural',
+        description: 'Lanche saudável e equilibrado',
+        price: 80,
+        category: 'food',
+        icon: '🥪',
+        color: 'green',
+        rarity: 'comum',
+        hungerRestore: 35,
+        energyBonus: 5
+    },
+    {
+        id: 'food-pizza',
+        name: 'Pizza do Refeitório',
+        description: 'Uma fatia generosa que sustenta',
+        price: 100,
+        category: 'food',
+        icon: '🍕',
+        color: 'red',
+        rarity: 'comum',
+        hungerRestore: 40,
+        energyBonus: 0
+    },
+    {
+        id: 'food-salad',
+        name: 'Salada Fitness',
+        description: 'Leve e nutritiva, ideal para manter o foco',
+        price: 70,
+        category: 'food',
+        icon: '🥗',
+        color: 'emerald',
+        rarity: 'comum',
+        hungerRestore: 25,
+        energyBonus: 10
+    },
+    {
+        id: 'food-chocolate',
+        name: 'Barra de Chocolate',
+        description: 'Prazer rápido e energia instantânea',
+        price: 25,
+        category: 'food',
+        icon: '🍫',
+        color: 'amber',
+        rarity: 'comum',
+        hungerRestore: 10,
+        energyBonus: 10
+    },
+    {
+        id: 'food-sushi',
+        name: 'Combo Sushi Premium',
+        description: 'Refeição japonesa sofisticada do hospital',
+        price: 250,
+        category: 'food',
+        icon: '🍣',
+        color: 'pink',
+        rarity: 'raro',
+        hungerRestore: 70,
+        energyBonus: 20
     }
 ];
 

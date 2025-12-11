@@ -1,8 +1,9 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, FileText, ShoppingCart, Trophy, Mail, Plus, Menu, X, GraduationCap, HelpCircle, BookOpen } from 'lucide-react';
+import { Home, FileText, ShoppingCart, Trophy, Mail, Plus, Menu, X, GraduationCap, HelpCircle, BookOpen, LogIn, Cloud } from 'lucide-react';
 import clsx from 'clsx';
 import { useGameStore } from '../store/gameStore';
 import { useMessageStore } from '../store/messageStore';
+import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
 
 interface LayoutProps {
@@ -13,10 +14,14 @@ export const Layout = ({ onShowTutorial }: LayoutProps) => {
     const { pathname } = useLocation();
     const { coins, xp, level } = useGameStore();
     const { messages } = useMessageStore();
+    const { user, syncing } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Ensure messages exists before filtering (safe access)
     const unreadCount = messages ? messages.filter(m => !m.read).length : 0;
+
+    // Get display name from user metadata
+    const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Dr. Usuário';
 
     const navItems = [
         { icon: Home, label: 'Início', path: '/', tutorialId: 'nav-home' },
@@ -157,16 +162,36 @@ export const Layout = ({ onShowTutorial }: LayoutProps) => {
                         </button>
                     )}
 
-                    {/* User Profile */}
-                    <Link to="/profile" className="flex items-center space-x-2 lg:space-x-3 hover:opacity-80 transition-opacity" data-tutorial="avatar">
-                        <div className="text-right hidden md:block">
-                            <div className="text-xs lg:text-sm font-bold text-white">Dr. Usuário</div>
-                            <div className="text-[10px] lg:text-xs text-slate-400">Cardiologia</div>
+                    {/* Sync Indicator */}
+                    {user && (
+                        <div className={clsx(
+                            "w-8 h-8 lg:w-10 lg:h-10 flex items-center justify-center rounded-lg transition-colors",
+                            syncing ? "text-cyan-400 animate-pulse" : "text-emerald-400"
+                        )} title={syncing ? "Sincronizando..." : "Dados sincronizados"}>
+                            {syncing ? <Cloud className="w-5 h-5" /> : <Cloud className="w-5 h-5" />}
                         </div>
-                        <div className="w-8 h-8 lg:w-12 lg:h-12 bg-slate-700 rounded-full overflow-hidden border-2 border-cyan-500 shadow-[0_0_15px_rgba(34,211,238,0.4)]">
-                            <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Felix" alt="Avatar" className="w-full h-full object-cover" />
-                        </div>
-                    </Link>
+                    )}
+
+                    {/* User Profile / Login */}
+                    {user ? (
+                        <Link to="/profile" className="flex items-center space-x-2 lg:space-x-3 hover:opacity-80 transition-opacity" data-tutorial="avatar">
+                            <div className="text-right hidden md:block">
+                                <div className="text-xs lg:text-sm font-bold text-white">{displayName}</div>
+                                <div className="text-[10px] lg:text-xs text-slate-400">Logado</div>
+                            </div>
+                            <div className="w-8 h-8 lg:w-12 lg:h-12 bg-slate-700 rounded-full overflow-hidden border-2 border-cyan-500 shadow-[0_0_15px_rgba(34,211,238,0.4)]">
+                                <img src={`https://api.dicebear.com/9.x/avataaars/svg?seed=${user.email}`} alt="Avatar" className="w-full h-full object-cover" />
+                            </div>
+                        </Link>
+                    ) : (
+                        <Link
+                            to="/auth"
+                            className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 border border-cyan-500/50 rounded-lg text-cyan-400 hover:bg-cyan-500/30 transition-colors"
+                        >
+                            <LogIn className="w-4 h-4" />
+                            <span className="hidden sm:inline text-sm font-medium">Entrar</span>
+                        </Link>
+                    )}
                 </header>
 
                 {/* Page Content */}

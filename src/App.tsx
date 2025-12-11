@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { AdminLayout } from './components/AdminLayout'
+import { ProtectedRoute } from './components/ProtectedRoute'
 import { HomePage } from './pages/HomePage'
 import { CaseCatalog } from './pages/CaseCatalog'
 import { Profile } from './pages/Profile'
@@ -11,12 +12,14 @@ import { LeaderboardPage } from './pages/LeaderboardPage'
 import { StudyPage } from './pages/StudyPage'
 import { MessagesPage } from './pages/MessagesPage'
 import { CareerTreePage } from './pages/CareerTreePage'
+import { AuthPage } from './pages/AuthPage'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { AdminCasesList } from './pages/admin/AdminCasesList'
 import { AdminCaseEditor } from './pages/admin/AdminCaseEditor'
 import { AdminQuizzesList } from './pages/admin/AdminQuizzesList'
 import { AdminQuizEditor } from './pages/admin/AdminQuizEditor'
 import { TutorialOverlay } from './components/TutorialOverlay'
+import { AuthProvider } from './contexts/AuthContext'
 
 import { useGameStore } from './store/gameStore';
 import { useEffect, useState } from 'react';
@@ -57,38 +60,42 @@ function App() {
     (window as any).showTutorial = () => setShowTutorial(true);
 
     return (
-        <Router>
-            <ToastContainer />
-            <TutorialOverlay isVisible={showTutorial} onClose={handleCloseTutorial} />
-            <Routes>
-                {/* Main App Routes */}
-                <Route path="/" element={<Layout onShowTutorial={() => setShowTutorial(true)} />}>
-                    <Route index element={<HomePage />} />
-                    <Route path="cases" element={<CaseCatalog />} />
-                    <Route path="game/:caseId" element={<GameInterface />} />
-                    <Route path="quiz" element={<QuizPage />} />
-                    <Route path="shop" element={<ShopPage />} />
-                    <Route path="profile" element={<Profile />} />
-                    <Route path="leaderboard" element={<LeaderboardPage />} />
-                    <Route path="study" element={<StudyPage />} />
-                    <Route path="messages" element={<MessagesPage />} />
-                    <Route path="career" element={<CareerTreePage />} />
-                </Route>
+        <AuthProvider>
+            <Router>
+                <ToastContainer />
+                <TutorialOverlay isVisible={showTutorial} onClose={handleCloseTutorial} />
+                <Routes>
+                    {/* Auth Route */}
+                    <Route path="/auth" element={<AuthPage />} />
 
-                {/* Admin Routes */}
-                <Route path="/admin" element={<AdminLayout />}>
-                    <Route index element={<AdminDashboard />} />
-                    <Route path="cases" element={<AdminCasesList />} />
-                    <Route path="cases/new" element={<AdminCaseEditor />} />
-                    <Route path="cases/edit/:id" element={<AdminCaseEditor />} />
-                    <Route path="quizzes" element={<AdminQuizzesList />} />
-                    <Route path="quizzes/new" element={<AdminQuizEditor />} />
-                    <Route path="quizzes/edit/:id" element={<AdminQuizEditor />} />
-                </Route>
-            </Routes>
-        </Router>
+                    {/* Main App Routes - All protected */}
+                    <Route path="/" element={<ProtectedRoute><Layout onShowTutorial={() => setShowTutorial(true)} /></ProtectedRoute>}>
+                        <Route index element={<HomePage />} />
+                        <Route path="cases" element={<CaseCatalog />} />
+                        <Route path="game/:caseId" element={<GameInterface />} />
+                        <Route path="quiz" element={<QuizPage />} />
+                        <Route path="shop" element={<ShopPage />} />
+                        <Route path="leaderboard" element={<LeaderboardPage />} />
+                        <Route path="study" element={<StudyPage />} />
+                        <Route path="career" element={<CareerTreePage />} />
+                        <Route path="profile" element={<Profile />} />
+                        <Route path="messages" element={<MessagesPage />} />
+                    </Route>
+
+                    {/* Admin Routes - All protected */}
+                    <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+                        <Route index element={<AdminDashboard />} />
+                        <Route path="cases" element={<AdminCasesList />} />
+                        <Route path="cases/new" element={<AdminCaseEditor />} />
+                        <Route path="cases/edit/:id" element={<AdminCaseEditor />} />
+                        <Route path="quizzes" element={<AdminQuizzesList />} />
+                        <Route path="quizzes/new" element={<AdminQuizEditor />} />
+                        <Route path="quizzes/edit/:id" element={<AdminQuizEditor />} />
+                    </Route>
+                </Routes>
+            </Router>
+        </AuthProvider>
     )
 }
 
 export default App
-

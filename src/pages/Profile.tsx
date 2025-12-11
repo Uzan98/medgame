@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Target, Flame, Award, ChevronRight, Star, Zap, Shield, Edit2, Moon, BookOpen, Coins, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Target, Flame, Award, ChevronRight, Star, Zap, Shield, Edit2, Moon, BookOpen, Coins, TrendingUp, LogOut } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { useToastStore } from '../store/toastStore';
+import { useAuth } from '../contexts/AuthContext';
 import { shopItems } from '../lib/shopItems';
 import clsx from 'clsx';
 
@@ -17,8 +19,17 @@ interface Achievement {
 }
 
 export const Profile: React.FC = () => {
+    const navigate = useNavigate();
+    const { signOut } = useAuth();
     const { coins, xp, level, streak, stats, ownedItems, rest, unlockedProfessions } = useGameStore();
     const [activeTab, setActiveTab] = useState<Tab>('stats');
+    const [loggingOut, setLoggingOut] = useState(false);
+
+    const handleLogout = async () => {
+        setLoggingOut(true);
+        await signOut();
+        navigate('/auth');
+    };
 
     const handleRest = () => {
         const rested = rest();
@@ -249,6 +260,16 @@ export const Profile: React.FC = () => {
                         >
                             <Moon className="w-4 h-4" />
                             Descansar em Casa (+50 Energia)
+                        </button>
+
+                        {/* Logout Button */}
+                        <button
+                            onClick={handleLogout}
+                            disabled={loggingOut}
+                            className="mt-2 w-full bg-red-500/20 border border-red-500/30 text-red-300 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            {loggingOut ? 'Saindo...' : 'Sair da Conta'}
                         </button>
                     </div>
                 </div>
