@@ -5,6 +5,7 @@ import { useGameStore } from '../store/gameStore';
 import { sampleCases } from '../lib/cases';
 import { useAdminStore } from '../store/adminStore';
 import { shopItems } from '../lib/shopItems';
+import { getCurrentBadge, getNextBadge } from '../lib/badges';
 import { LifeSystemInfo } from '../components/LifeSystemInfo';
 import clsx from 'clsx';
 
@@ -213,6 +214,67 @@ export const HomePage: React.FC = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* Current Badge Card */}
+                    {(() => {
+                        const currentBadge = getCurrentBadge(level);
+                        const nextBadge = getNextBadge(level);
+                        const progressToNext = nextBadge
+                            ? ((level - currentBadge.level) / (nextBadge.level - currentBadge.level)) * 100
+                            : 100;
+
+                        return (
+                            <div className="bg-gradient-to-br from-slate-800/80 to-amber-900/20 backdrop-blur-sm border border-amber-500/30 rounded-2xl lg:rounded-3xl p-4 lg:p-6 shadow-[0_0_30px_rgba(245,158,11,0.15)] hidden sm:block">
+                                <h3 className="font-bold text-white text-sm lg:text-base mb-4 flex items-center gap-2">
+                                    <Trophy className="w-4 h-4 text-amber-400" />
+                                    Sua Insígnia
+                                </h3>
+
+                                {/* Current Badge Display */}
+                                <div className="flex flex-col items-center mb-4">
+                                    <div className="relative group">
+                                        <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all" />
+                                        <img
+                                            src={currentBadge.image}
+                                            alt={currentBadge.name}
+                                            className="w-24 h-24 lg:w-28 lg:h-28 object-contain relative z-10 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)] group-hover:scale-110 transition-transform"
+                                        />
+                                    </div>
+                                    <h4 className="text-lg font-bold text-amber-400 mt-3">{currentBadge.name}</h4>
+                                    <p className="text-xs text-slate-400 text-center">{currentBadge.description}</p>
+                                    <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded-full mt-2 border border-amber-500/30">
+                                        Nível {currentBadge.level}+
+                                    </span>
+                                </div>
+
+                                {/* Progress to Next Badge */}
+                                {nextBadge && (
+                                    <div className="bg-slate-900/50 rounded-xl p-3 border border-slate-700">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[10px] text-slate-400">Próxima insígnia</span>
+                                            <span className="text-[10px] text-amber-400 font-bold">{nextBadge.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all"
+                                                    style={{ width: `${progressToNext}%` }}
+                                                />
+                                            </div>
+                                            <img
+                                                src={nextBadge.image}
+                                                alt={nextBadge.name}
+                                                className="w-8 h-8 object-contain opacity-50 grayscale"
+                                            />
+                                        </div>
+                                        <p className="text-[10px] text-slate-500 mt-1 text-center">
+                                            Faltam {nextBadge.level - level} níveis
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })()}
                 </div>
 
                 {/* Centro - Avatar e Nível */}

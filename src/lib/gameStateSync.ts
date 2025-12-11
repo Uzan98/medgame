@@ -92,7 +92,7 @@ export const saveGameState = async (userId: string): Promise<boolean> => {
 
 
         // Use upsert to handle both insert and update cases
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from('game_state')
             .upsert({
                 user_id: userId,

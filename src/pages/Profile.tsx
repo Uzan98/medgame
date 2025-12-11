@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Target, Flame, Award, ChevronRight, Star, Zap, Shield, Edit2, Moon, BookOpen, Coins, TrendingUp, LogOut } from 'lucide-react';
+import { Target, Flame, Award, ChevronRight, Star, Zap, Shield, Edit2, Moon, BookOpen, Coins, TrendingUp, LogOut, Lock, Trophy } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { useToastStore } from '../store/toastStore';
 import { useAuth } from '../contexts/AuthContext';
 import { shopItems } from '../lib/shopItems';
+import { badges, isBadgeUnlocked, getCurrentBadge } from '../lib/badges';
 import clsx from 'clsx';
 
-type Tab = 'stats' | 'items' | 'achievements';
+type Tab = 'stats' | 'items' | 'achievements' | 'badges';
 
 interface Achievement {
     id: string;
@@ -281,6 +282,7 @@ export const Profile: React.FC = () => {
                     { id: 'stats', label: 'Estatísticas', icon: Target },
                     { id: 'items', label: 'Inventário', icon: Shield },
                     { id: 'achievements', label: 'Conquistas', icon: Award },
+                    { id: 'badges', label: 'Insígnias', icon: Trophy },
                 ].map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -411,6 +413,95 @@ export const Profile: React.FC = () => {
                                 </div>
                             );
                         })}
+                    </div>
+                )}
+
+                {activeTab === 'badges' && (
+                    <div className="space-y-4">
+                        {/* Current Badge Highlight */}
+                        {(() => {
+                            const currentBadge = getCurrentBadge(level);
+                            return (
+                                <div className="bg-gradient-to-r from-amber-900/30 to-slate-800/50 rounded-2xl p-4 border border-amber-500/30">
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative">
+                                            <div className="absolute inset-0 bg-amber-500/30 rounded-full blur-xl" />
+                                            <img
+                                                src={currentBadge.image}
+                                                alt={currentBadge.name}
+                                                className="w-20 h-20 object-contain relative z-10"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <span className="text-[10px] text-amber-400/80 uppercase tracking-wider">Insígnia Atual</span>
+                                            <h3 className="text-xl font-bold text-amber-400">{currentBadge.name}</h3>
+                                            <p className="text-xs text-slate-400">{currentBadge.description}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
+                        {/* All Badges Grid */}
+                        <div className="grid grid-cols-4 gap-3">
+                            {badges.map((badge) => {
+                                const unlocked = isBadgeUnlocked(badge, level);
+                                const current = getCurrentBadge(level);
+                                const isCurrent = badge.id === current.id;
+
+                                return (
+                                    <div
+                                        key={badge.id}
+                                        className={clsx(
+                                            "relative flex flex-col items-center p-3 rounded-xl border transition-all",
+                                            unlocked
+                                                ? isCurrent
+                                                    ? "bg-gradient-to-br from-amber-900/40 to-slate-800/50 border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.2)]"
+                                                    : "bg-slate-800/50 border-emerald-500/30 hover:border-emerald-500/50"
+                                                : "bg-slate-900/50 border-slate-700/50"
+                                        )}
+                                    >
+                                        {/* Lock overlay for locked badges */}
+                                        {!unlocked && (
+                                            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[1px] rounded-xl flex items-center justify-center z-10">
+                                                <Lock className="w-6 h-6 text-slate-600" />
+                                            </div>
+                                        )}
+
+                                        <img
+                                            src={badge.image}
+                                            alt={badge.name}
+                                            className={clsx(
+                                                "w-14 h-14 lg:w-16 lg:h-16 object-contain mb-2",
+                                                !unlocked && "grayscale opacity-40"
+                                            )}
+                                        />
+                                        <h4 className={clsx(
+                                            "text-xs font-bold text-center",
+                                            unlocked ? (isCurrent ? "text-amber-400" : "text-white") : "text-slate-600"
+                                        )}>
+                                            {badge.name}
+                                        </h4>
+                                        <span className={clsx(
+                                            "text-[10px] mt-1",
+                                            unlocked ? "text-slate-400" : "text-slate-600"
+                                        )}>
+                                            Nível {badge.level}
+                                        </span>
+                                        {unlocked && isCurrent && (
+                                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center">
+                                                <Star className="w-3 h-3 text-white fill-white" />
+                                            </div>
+                                        )}
+                                        {unlocked && !isCurrent && (
+                                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-[10px] text-white font-bold">
+                                                ✓
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 )}
             </div>
