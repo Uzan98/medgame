@@ -22,12 +22,18 @@ import { TutorialOverlay } from './components/TutorialOverlay'
 import { AuthProvider } from './contexts/AuthContext'
 
 import { useGameStore } from './store/gameStore';
+import { loadAdminContent } from './lib/adminSync';
 import { useEffect, useState } from 'react';
 import { ToastContainer } from './components/ToastContainer';
 
 function App() {
     const { updateHunger, hasSeenTutorial } = useGameStore();
     const [showTutorial, setShowTutorial] = useState(false);
+
+    // Load admin content (cases/quizzes) from Supabase on start
+    useEffect(() => {
+        loadAdminContent();
+    }, []);
 
     // Global Hunger Timer
     useEffect(() => {
