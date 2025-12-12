@@ -11,7 +11,6 @@ import {
     Star,
     BookOpen,
     Target,
-    Flame,
     Play,
     CheckCircle2,
     ArrowRight,
