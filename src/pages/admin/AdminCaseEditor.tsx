@@ -65,6 +65,7 @@ export const AdminCaseEditor: React.FC = () => {
         category: 'Cardiologia',
         difficulty: 'medio' as 'facil' | 'medio' | 'dificil',
         estimatedTime: 15,
+        requiredLevel: 1,
     });
 
     const [vitals, setVitals] = useState<VitalSigns>(emptyVitals);
@@ -85,6 +86,7 @@ export const AdminCaseEditor: React.FC = () => {
                 category: existingCase.category,
                 difficulty: existingCase.difficulty,
                 estimatedTime: existingCase.estimatedTime,
+                requiredLevel: existingCase.requiredLevel || 1,
             });
             setVitals(existingCase.vitalSigns);
             setExams(existingCase.exams || []);
@@ -306,6 +308,19 @@ export const AdminCaseEditor: React.FC = () => {
                                 onChange={(e) => setFormData({ ...formData, estimatedTime: parseInt(e.target.value) })}
                                 className="w-full px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-cyan-500"
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm text-slate-400 mb-1">Nível Mínimo</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="100"
+                                value={formData.requiredLevel}
+                                onChange={(e) => setFormData({ ...formData, requiredLevel: parseInt(e.target.value) || 1 })}
+                                className="w-full px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-cyan-500"
+                            />
+                            <p className="text-[10px] text-slate-500 mt-1">Jogadores precisam estar neste nível para desbloquear</p>
                         </div>
                     </div>
 

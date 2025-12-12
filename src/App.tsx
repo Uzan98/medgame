@@ -13,6 +13,7 @@ import { StudyPage } from './pages/StudyPage'
 import { MessagesPage } from './pages/MessagesPage'
 import { CareerTreePage } from './pages/CareerTreePage'
 import { AuthPage } from './pages/AuthPage'
+import { LandingPage } from './pages/LandingPage'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { AdminCasesList } from './pages/admin/AdminCasesList'
 import { AdminCaseEditor } from './pages/admin/AdminCaseEditor'
@@ -71,6 +72,9 @@ function App() {
                 <ToastContainer />
                 <TutorialOverlay isVisible={showTutorial} onClose={handleCloseTutorial} />
                 <Routes>
+                    {/* Public Landing Page */}
+                    <Route path="/landing" element={<LandingPage />} />
+
                     {/* Auth Route */}
                     <Route path="/auth" element={<AuthPage />} />
 

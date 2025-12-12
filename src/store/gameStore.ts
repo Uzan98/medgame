@@ -241,7 +241,9 @@ export const useGameStore = create<GameState>()(
                 }
 
                 // Premium check: Free users can only unlock 1 per level tier
-                const unlocksAtThisLevel = state.unlockedByLevel[levelReq] || []
+                // Use fallback empty object if unlockedByLevel is undefined (from Supabase sync)
+                const currentUnlockedByLevel = state.unlockedByLevel || { 1: ['academic'] }
+                const unlocksAtThisLevel = currentUnlockedByLevel[levelReq] || []
                 if (!state.isPremium && unlocksAtThisLevel.length >= 1) {
                     useToastStore.getState().addToast('Limite gratuito atingido! Seja Premium para desbloquear mais especialidades neste nível 👑', 'warning')
                     return false
@@ -249,7 +251,7 @@ export const useGameStore = create<GameState>()(
 
                 // Perform unlock
                 const newUnlockedByLevel = {
-                    ...state.unlockedByLevel,
+                    ...currentUnlockedByLevel,
                     [levelReq]: [...unlocksAtThisLevel, id]
                 }
 
