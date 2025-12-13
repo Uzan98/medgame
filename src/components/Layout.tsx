@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, FileText, ShoppingCart, Trophy, Mail, Plus, Menu, X, GraduationCap, HelpCircle, BookOpen, LogIn, Cloud } from 'lucide-react';
+import { Home, FileText, ShoppingCart, Trophy, Mail, Plus, Menu, X, GraduationCap, HelpCircle, BookOpen, LogIn, Cloud, Stethoscope, Gamepad2 } from 'lucide-react';
 import clsx from 'clsx';
 import { useGameStore } from '../store/gameStore';
 import { useMessageStore } from '../store/messageStore';
@@ -27,6 +27,7 @@ export const Layout = ({ onShowTutorial }: LayoutProps) => {
         { icon: Home, label: 'Início', path: '/', tutorialId: 'nav-home' },
         { icon: FileText, label: 'Quiz', path: '/quiz', tutorialId: 'nav-quiz' },
         { icon: Plus, label: 'Casos', path: '/cases', tutorialId: 'nav-cases' },
+        { icon: Gamepad2, label: 'Games', path: '/games', tutorialId: 'nav-games' },
         { icon: GraduationCap, label: 'Carreira', path: '/career', tutorialId: 'nav-career' },
         { icon: ShoppingCart, label: 'Loja', path: '/shop', tutorialId: 'nav-shop' },
         { icon: Trophy, label: 'Ranking', path: '/leaderboard', tutorialId: 'nav-ranking' },
@@ -135,6 +136,21 @@ export const Layout = ({ onShowTutorial }: LayoutProps) => {
                             <span className="text-sm lg:text-base font-bold text-yellow-400">{coins}</span>
                         </div>
                         <div className="w-5 h-5 lg:w-6 lg:h-6 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 text-xs lg:text-sm">+</div>
+                    </Link>
+
+                    {/* Plantão Button */}
+                    <Link
+                        to="/shifts"
+                        className={clsx(
+                            "flex items-center gap-2 px-3 lg:px-4 py-1.5 lg:py-2 rounded-full border transition-colors",
+                            pathname === '/shifts' || pathname.startsWith('/shift/')
+                                ? "bg-cyan-500/20 border-cyan-500/50 text-cyan-400"
+                                : "bg-slate-800/50 border-slate-700 text-slate-300 hover:border-cyan-500/30 hover:text-cyan-400"
+                        )}
+                        data-tutorial="nav-shifts"
+                    >
+                        <Stethoscope className="w-4 h-4 lg:w-5 lg:h-5" />
+                        <span className="text-xs lg:text-sm font-medium hidden sm:inline">Plantão</span>
                     </Link>
 
                     {/* Messages */}

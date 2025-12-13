@@ -12,6 +12,11 @@ import { LeaderboardPage } from './pages/LeaderboardPage'
 import { StudyPage } from './pages/StudyPage'
 import { MessagesPage } from './pages/MessagesPage'
 import { CareerTreePage } from './pages/CareerTreePage'
+import { ShiftsPage } from './pages/ShiftsPage'
+import { ShiftGamePage } from './pages/ShiftGamePage'
+import { MedGamesPage } from './pages/MedGamesPage'
+import { MedMilhaoPage } from './pages/MedMilhaoPage'
+import { PlantaoInfinitoPage } from './pages/PlantaoInfinitoPage'
 import { AuthPage } from './pages/AuthPage'
 import { LandingPage } from './pages/LandingPage'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
@@ -19,6 +24,8 @@ import { AdminCasesList } from './pages/admin/AdminCasesList'
 import { AdminCaseEditor } from './pages/admin/AdminCaseEditor'
 import { AdminQuizzesList } from './pages/admin/AdminQuizzesList'
 import { AdminQuizEditor } from './pages/admin/AdminQuizEditor'
+import { AdminShiftsList } from './pages/admin/AdminShiftsList'
+import { AdminShiftEditor } from './pages/admin/AdminShiftEditor'
 import { TutorialOverlay } from './components/TutorialOverlay'
 import { AuthProvider } from './contexts/AuthContext'
 
@@ -88,6 +95,11 @@ function App() {
                         <Route path="leaderboard" element={<LeaderboardPage />} />
                         <Route path="study" element={<StudyPage />} />
                         <Route path="career" element={<CareerTreePage />} />
+                        <Route path="shifts" element={<ShiftsPage />} />
+                        <Route path="shift/:shiftId" element={<ShiftGamePage />} />
+                        <Route path="games" element={<MedGamesPage />} />
+                        <Route path="games/medmilhao" element={<MedMilhaoPage />} />
+                        <Route path="games/plantao-infinito" element={<PlantaoInfinitoPage />} />
                         <Route path="profile" element={<Profile />} />
                         <Route path="messages" element={<MessagesPage />} />
                     </Route>
@@ -101,6 +113,9 @@ function App() {
                         <Route path="quizzes" element={<AdminQuizzesList />} />
                         <Route path="quizzes/new" element={<AdminQuizEditor />} />
                         <Route path="quizzes/edit/:id" element={<AdminQuizEditor />} />
+                        <Route path="shifts" element={<AdminShiftsList />} />
+                        <Route path="shifts/new" element={<AdminShiftEditor />} />
+                        <Route path="shifts/edit/:id" element={<AdminShiftEditor />} />
                     </Route>
                 </Routes>
             </Router>

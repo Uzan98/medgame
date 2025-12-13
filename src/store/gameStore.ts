@@ -52,6 +52,10 @@ export interface GameState {
     isStudying: boolean
     studyStartTime: number | null
 
+    // Shift system
+    activeShift: any | null  // Currently active shift
+    completedShifts: string[]  // IDs of completed shifts
+
     // Game data
     cases: Case[]
     totalScore: number
@@ -83,6 +87,10 @@ export interface GameState {
     // Study actions
     startStudying: () => void
     stopStudying: () => { minutes: number; coinsEarned: number; xpEarned: number }
+
+    // Shift actions
+    setActiveShift: (shift: any | null) => void
+    completeShift: (shiftId: string) => void
 }
 
 const XP_PER_LEVEL = 1000
@@ -112,6 +120,10 @@ export const useGameStore = create<GameState>()(
             // Study system
             isStudying: false,
             studyStartTime: null,
+
+            // Shift system
+            activeShift: null,
+            completedShifts: [],
 
             // Game data
             cases: [],
@@ -240,12 +252,13 @@ export const useGameStore = create<GameState>()(
                     return false
                 }
 
-                // Premium check: Free users can only unlock 1 per level tier
-                // Use fallback empty object if unlockedByLevel is undefined (from Supabase sync)
+                // Track unlocks by level - 'academic' doesn't count as it's pre-unlocked
                 const currentUnlockedByLevel = state.unlockedByLevel || { 1: ['academic'] }
-                const unlocksAtThisLevel = currentUnlockedByLevel[levelReq] || []
-                if (!state.isPremium && unlocksAtThisLevel.length >= 1) {
-                    useToastStore.getState().addToast('Limite gratuito atingido! Seja Premium para desbloquear mais especialidades neste nível 👑', 'warning')
+                const unlocksAtThisLevel = (currentUnlockedByLevel[levelReq] || []).filter((s: string) => s !== 'academic')
+
+                // Limit: only 1 specialty per level tier (excluding academic)
+                if (unlocksAtThisLevel.length >= 1) {
+                    useToastStore.getState().addToast('Você já escolheu uma especialidade neste nível! Avance para desbloquear mais.', 'warning')
                     return false
                 }
 
@@ -368,6 +381,14 @@ export const useGameStore = create<GameState>()(
 
                 return { minutes, coinsEarned, xpEarned }
             },
+
+            // Shift actions
+            setActiveShift: (shift) => set({ activeShift: shift }),
+
+            completeShift: (shiftId) => set((state) => ({
+                activeShift: null,
+                completedShifts: [...state.completedShifts, shiftId]
+            })),
         }),
         {
             name: 'medgame-storage',

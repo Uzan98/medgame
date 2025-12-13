@@ -144,8 +144,9 @@ export const debouncedSave = (userId: string) => {
     }, 2000);
 };
 
-// Get leaderboard data
+// Get leaderboard data - using optimized PostgreSQL RPC function
 export const getLeaderboard = async (): Promise<Array<{
+    user_id: string;
     display_name: string;
     avatar_url: string | null;
     xp: number;
@@ -155,15 +156,14 @@ export const getLeaderboard = async (): Promise<Array<{
     quizzes_taken: number;
 }>> => {
     try {
-        const { data, error } = await supabase
-            .from('leaderboard')
-            .select('*')
-            .limit(100);
+        // Use optimized RPC function that does the join in the database
+        const { data, error } = await supabase.rpc('get_leaderboard');
 
         if (error) {
             console.error('Error fetching leaderboard:', error);
             return [];
         }
+
 
         return data || [];
     } catch (err) {

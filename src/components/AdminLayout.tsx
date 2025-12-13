@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, FileText, HelpCircle, ArrowLeft,
-    LogOut, Settings, Menu, X
+    LogOut, Settings, Menu, X, Stethoscope
 } from 'lucide-react';
 import { useAdminStore } from '../store/adminStore';
 import clsx from 'clsx';
@@ -11,6 +11,7 @@ const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
     { icon: FileText, label: 'Casos Clínicos', path: '/admin/cases' },
     { icon: HelpCircle, label: 'Quizzes', path: '/admin/quizzes' },
+    { icon: Stethoscope, label: 'Plantões', path: '/admin/shifts' },
 ];
 
 export const AdminLayout: React.FC = () => {
