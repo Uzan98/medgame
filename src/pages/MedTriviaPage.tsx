@@ -18,9 +18,9 @@ import {
     TRIVIA_CATEGORIES
 } from '../lib/triviaTypes';
 import { useGameStore } from '../store/gameStore';
-import { useToastStore } from '../store/toastStore';
 import { useTriviaStore } from '../store/triviaStore';
 import { casinoSounds } from '../lib/casinoSounds';
+import { triggerCoinReward } from '../components/CoinRewardAnimation';
 import clsx from 'clsx';
 
 const QUESTION_TIME = 15; // seconds per question
@@ -212,7 +212,9 @@ export const MedTriviaPage: React.FC = () => {
 
         addCoins(total);
         addXP(Math.floor(total / 2));
-        useToastStore.getState().addToast(`+${total} MediCoins!`, 'success');
+
+        // Trigger animated coin reward
+        triggerCoinReward(total);
     };
 
     // Victory screen

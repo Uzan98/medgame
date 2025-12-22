@@ -48,6 +48,7 @@ import { useGameStore } from './store/gameStore';
 import { loadAdminContent } from './lib/adminSync';
 import { useEffect, useState } from 'react';
 import { ToastContainer } from './components/ToastContainer';
+import { CoinRewardAnimation } from './components/CoinRewardAnimation';
 
 function App() {
     const { updateHunger, hasSeenTutorial } = useGameStore();
@@ -92,6 +93,7 @@ function App() {
         <AuthProvider>
             <Router>
                 <ToastContainer />
+                <CoinRewardAnimation />
                 <TutorialOverlay isVisible={showTutorial} onClose={handleCloseTutorial} />
                 <Routes>
                     {/* Public Landing Page */}

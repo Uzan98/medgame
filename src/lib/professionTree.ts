@@ -1,364 +1,290 @@
+// Medical Career Profession Tree - Gamified Version with Lucide Icons
+// Redesigned with reduced level requirements for faster progression
+
 export interface ProfessionNode {
     id: string;
     label: string;
     description?: string;
     parentId?: string;
     levelRequired: number;
+    icon?: string; // Lucide icon name
+    color?: string;
     children?: ProfessionNode[];
 }
+
+// Career areas with colors
+export const CAREER_AREAS = {
+    clinica: { name: 'Clínica Médica', color: 'red', icon: 'Stethoscope', bgColor: 'bg-red-500' },
+    cirurgia: { name: 'Cirurgia', color: 'blue', icon: 'Scissors', bgColor: 'bg-blue-500' },
+    pediatria: { name: 'Pediatria', color: 'emerald', icon: 'Baby', bgColor: 'bg-emerald-500' },
+    mulher: { name: 'Saúde da Mulher', color: 'pink', icon: 'Heart', bgColor: 'bg-pink-500' },
+    neuro: { name: 'Neurociências', color: 'purple', icon: 'Brain', bgColor: 'bg-purple-500' },
+    diagnostico: { name: 'Diagnóstico', color: 'amber', icon: 'Microscope', bgColor: 'bg-amber-500' },
+    intensiva: { name: 'Intensiva/Emergência', color: 'orange', icon: 'Siren', bgColor: 'bg-orange-500' },
+    preventiva: { name: 'Preventiva/Trabalho', color: 'teal', icon: 'ClipboardList', bgColor: 'bg-teal-500' },
+} as const;
 
 export const professionTree: ProfessionNode[] = [
     {
         id: 'academic',
         label: 'Acadêmico',
         levelRequired: 1,
-        description: 'Estudante de Medicina e Interno',
+        icon: 'BookOpen',
+        color: 'slate',
+        description: 'Estudante de Medicina',
         children: [
+            // ========== CLÍNICA MÉDICA ==========
             {
                 id: 'clinica-medica',
                 label: 'Clínica Médica',
-                levelRequired: 5,
+                levelRequired: 3,
+                icon: 'Stethoscope',
+                color: 'red',
                 children: [
                     {
-                        id: 'cardiologia',
-                        label: 'Cardiologia',
-                        levelRequired: 15,
+                        id: 'cardiologia', label: 'Cardiologia', levelRequired: 8, icon: 'HeartPulse', color: 'red',
                         children: [
-                            { id: 'hemodinamica', label: 'Hemodinâmica / Intervencionista', levelRequired: 30 },
-                            { id: 'eletrofisiologia', label: 'Eletrofisiologia', levelRequired: 30 },
-                            { id: 'ic-avancada', label: 'Insuficiência Cardíaca Avançada', levelRequired: 30 },
-                            { id: 'marcapasso', label: 'Marcapasso e Dispositivos', levelRequired: 30 },
-                            { id: 'imagem-cardio', label: 'Imagem Cardiovascular Avançada', levelRequired: 30 },
+                            { id: 'hemodinamica', label: 'Hemodinâmica', levelRequired: 15, icon: 'Activity' },
+                            { id: 'eletrofisiologia', label: 'Eletrofisiologia', levelRequired: 15, icon: 'Zap' },
+                            { id: 'ic-avancada', label: 'Insuf. Cardíaca', levelRequired: 15, icon: 'Heart' },
                         ]
                     },
                     {
-                        id: 'pneumologia',
-                        label: 'Pneumologia',
-                        levelRequired: 15,
+                        id: 'pneumologia', label: 'Pneumologia', levelRequired: 8, icon: 'Wind', color: 'red',
                         children: [
-                            { id: 'broncoscopia', label: 'Broncoscopia Avançada', levelRequired: 30 },
-                            { id: 'sono-pneumo', label: 'Medicina do Sono', levelRequired: 30 },
+                            { id: 'broncoscopia', label: 'Broncoscopia', levelRequired: 15, icon: 'Search' },
+                            { id: 'sono-pneumo', label: 'Medicina do Sono', levelRequired: 15, icon: 'Moon' },
                         ]
                     },
                     {
-                        id: 'gastro',
-                        label: 'Gastroenterologia',
-                        levelRequired: 15,
+                        id: 'gastro', label: 'Gastroenterologia', levelRequired: 8, icon: 'UtensilsCrossed', color: 'red',
                         children: [
-                            { id: 'endoscopia', label: 'Endoscopia Digestiva Avançada', levelRequired: 30 },
-                            { id: 'hepatologia', label: 'Hepatologia', levelRequired: 30 },
-                            { id: 'motilidade', label: 'Motilidade Digestiva', levelRequired: 30 },
+                            { id: 'endoscopia', label: 'Endoscopia', levelRequired: 15, icon: 'ScanLine' },
+                            { id: 'hepatologia', label: 'Hepatologia', levelRequired: 15, icon: 'Pill' },
                         ]
                     },
-                    {
-                        id: 'endocrino',
-                        label: 'Endocrinologia',
-                        levelRequired: 15,
-                        children: [
-                            { id: 'diabetologia', label: 'Diabetologia Avançada', levelRequired: 30 },
-                            { id: 'obesidade', label: 'Obesidade / Metabologia', levelRequired: 30 },
-                        ]
-                    },
-                    { id: 'reumato', label: 'Reumatologia', levelRequired: 15 },
-                    {
-                        id: 'nefro',
-                        label: 'Nefrologia',
-                        levelRequired: 15,
-                        children: [
-                            { id: 'tx-renal', label: 'Transplante Renal', levelRequired: 30 },
-                            { id: 'nefro-interv', label: 'Nefrologia Intervencionista', levelRequired: 30 },
-                        ]
-                    },
-                    {
-                        id: 'hemato',
-                        label: 'Hematologia',
-                        levelRequired: 15,
-                        children: [
-                            { id: 'tmo', label: 'Transplante de Medula Óssea', levelRequired: 30 },
-                            { id: 'hemato-lab', label: 'Hematologia Laboratorial', levelRequired: 30 },
-                        ]
-                    },
-                    {
-                        id: 'infecto',
-                        label: 'Infectologia',
-                        levelRequired: 15,
-                        children: [
-                            { id: 'tropicais', label: 'Doenças Tropicais', levelRequired: 30 },
-                            { id: 'ccih', label: 'Controle de Infecção', levelRequired: 30 },
-                        ]
-                    },
-                    {
-                        id: 'onco-clinica',
-                        label: 'Oncologia Clínica',
-                        levelRequired: 15,
-                        children: [
-                            { id: 'onco-torax', label: 'Oncologia Torácica', levelRequired: 30 },
-                            { id: 'onco-gastro', label: 'Oncologia Gastrointestinal', levelRequired: 30 },
-                            { id: 'onco-hemato', label: 'Onco-Hematologia', levelRequired: 30 },
-                            { id: 'paliativos-onco', label: 'Cuidados Paliativos Oncológicos', levelRequired: 30 },
-                        ]
-                    },
-                    { id: 'geriatria', label: 'Geriatria', levelRequired: 15 },
-                    { id: 'alergia', label: 'Alergia e Imunologia', levelRequired: 15 },
-                    { id: 'med-esporte', label: 'Medicina Esportiva', levelRequired: 15 },
-                    { id: 'paliativos', label: 'Cuidados Paliativos', levelRequired: 15 },
+                    { id: 'endocrino', label: 'Endocrinologia', levelRequired: 8, icon: 'Sparkles', color: 'red' },
+                    { id: 'nefro', label: 'Nefrologia', levelRequired: 8, icon: 'Droplets', color: 'red' },
+                    { id: 'hemato', label: 'Hematologia', levelRequired: 8, icon: 'Droplet', color: 'red' },
+                    { id: 'infecto', label: 'Infectologia', levelRequired: 8, icon: 'Bug', color: 'red' },
+                    { id: 'reumato', label: 'Reumatologia', levelRequired: 8, icon: 'Bone', color: 'red' },
+                    { id: 'geriatria', label: 'Geriatria', levelRequired: 8, icon: 'PersonStanding', color: 'red' },
+                    { id: 'onco-clinica', label: 'Oncologia', levelRequired: 8, icon: 'Ribbon', color: 'red' },
                 ]
             },
+
+            // ========== CIRURGIA ==========
             {
                 id: 'cirurgia-geral',
                 label: 'Cirurgia Geral',
-                levelRequired: 5,
+                levelRequired: 3,
+                icon: 'Scissors',
+                color: 'blue',
                 children: [
                     {
-                        id: 'cir-digestivo',
-                        label: 'Cirurgia do Aparelho Digestivo',
-                        levelRequired: 15,
+                        id: 'cir-digestivo', label: 'Cir. Digestiva', levelRequired: 8, icon: 'Slice', color: 'blue',
                         children: [
-                            { id: 'hpb', label: 'Cirurgia Hepatobiliopancreática', levelRequired: 30 },
-                            { id: 'esofago', label: 'Cirurgia Esofagogástrica', levelRequired: 30 },
-                            { id: 'bariatrica', label: 'Cirurgia Bariátrica', levelRequired: 30 },
-                            { id: 'coloprocto', label: 'Coloproctologia', levelRequired: 30 },
+                            { id: 'bariatrica', label: 'Bariátrica', levelRequired: 15, icon: 'Scale' },
+                            { id: 'coloprocto', label: 'Coloproctologia', levelRequired: 15, icon: 'Scan' },
                         ]
                     },
-                    {
-                        id: 'cir-vascular',
-                        label: 'Cirurgia Vascular',
-                        levelRequired: 15,
-                        children: [
-                            { id: 'endovascular', label: 'Endovascular Avançado', levelRequired: 30 },
-                            { id: 'aneurismas', label: 'Aneurismas Complexos', levelRequired: 30 },
-                            { id: 'carotidea', label: 'Cirurgia Carotídea', levelRequired: 30 },
-                        ]
-                    },
-                    {
-                        id: 'cir-toracica',
-                        label: 'Cirurgia Torácica',
-                        levelRequired: 15,
-                        children: [
-                            { id: 'onco-torax-cir', label: 'Oncologia Torácica', levelRequired: 30 },
-                            { id: 'endoscopia-torax', label: 'Endoscopia Torácica', levelRequired: 30 },
-                        ]
-                    },
-                    {
-                        id: 'urologia',
-                        label: 'Urologia',
-                        levelRequired: 15,
-                        children: [
-                            { id: 'uro-onco', label: 'Uro-Oncologia', levelRequired: 30 },
-                            { id: 'endourologia', label: 'Endourologia', levelRequired: 30 },
-                            { id: 'andrologia', label: 'Andrologia', levelRequired: 30 },
-                            { id: 'uro-reconst', label: 'Urologia Reconstrutora', levelRequired: 30 },
-                        ]
-                    },
-                    {
-                        id: 'cir-plastica',
-                        label: 'Cirurgia Plástica',
-                        levelRequired: 15,
-                        children: [
-                            { id: 'microcirurgia', label: 'Microcirurgia', levelRequired: 30 },
-                            { id: 'cranio-maxilo', label: 'Crânio-Maxilofacial', levelRequired: 30 },
-                            { id: 'mao', label: 'Cirurgia da Mão', levelRequired: 30 },
-                            { id: 'queimados', label: 'Cirurgia de Queimados', levelRequired: 30 },
-                            { id: 'estetica', label: 'Estética Avançada', levelRequired: 30 },
-                        ]
-                    },
-                    { id: 'cir-onco', label: 'Cirurgia Oncológica', levelRequired: 15 },
-                    {
-                        id: 'transplante',
-                        label: 'Transplante',
-                        levelRequired: 15,
-                        children: [
-                            { id: 'tx-figado', label: 'Transplante Hepático', levelRequired: 30 },
-                            { id: 'tx-cardio', label: 'Transplante Cardíaco', levelRequired: 30 },
-                            { id: 'tx-rim', label: 'Transplante Renal', levelRequired: 30 },
-                            { id: 'tx-pulmao', label: 'Transplante Pulmonar', levelRequired: 30 },
-                        ]
-                    }
+                    { id: 'cir-vascular', label: 'Cir. Vascular', levelRequired: 8, icon: 'GitBranch', color: 'blue' },
+                    { id: 'cir-toracica', label: 'Cir. Torácica', levelRequired: 8, icon: 'Wind', color: 'blue' },
+                    { id: 'urologia', label: 'Urologia', levelRequired: 8, icon: 'Droplets', color: 'blue' },
+                    { id: 'cir-plastica', label: 'Cir. Plástica', levelRequired: 8, icon: 'Sparkle', color: 'blue' },
+                    { id: 'transplante', label: 'Transplante', levelRequired: 8, icon: 'HeartHandshake', color: 'blue' },
                 ]
             },
+
+            // ========== PEDIATRIA ==========
             {
                 id: 'pediatria',
                 label: 'Pediatria',
-                levelRequired: 5,
+                levelRequired: 3,
+                icon: 'Baby',
+                color: 'emerald',
                 children: [
-                    { id: 'neo', label: 'Neonatologia', levelRequired: 15 },
-                    { id: 'cardio-ped', label: 'Cardiologia Pediátrica', levelRequired: 15 },
-                    { id: 'neuro-ped', label: 'Neurologia Pediátrica', levelRequired: 15 },
-                    { id: 'endocrino-ped', label: 'Endocrinopediatria', levelRequired: 15 },
-                    { id: 'pneumo-ped', label: 'Pneumopediatria', levelRequired: 15 },
-                    { id: 'nefro-ped', label: 'Nefropediatria', levelRequired: 15 },
-                    { id: 'gastro-ped', label: 'Gastroenteropediatria', levelRequired: 15 },
-                    { id: 'hemato-ped', label: 'Hematopediatria', levelRequired: 15 },
-                    { id: 'onco-ped', label: 'Oncopediatria', levelRequired: 15 },
-                    { id: 'reumato-ped', label: 'Reumatopediatria', levelRequired: 15 },
-                    { id: 'alergia-ped', label: 'Alergopediatria', levelRequired: 15 },
-                    { id: 'uti-ped', label: 'Terapia Intensiva Pediátrica', levelRequired: 15 },
+                    { id: 'neo', label: 'Neonatologia', levelRequired: 8, icon: 'Baby', color: 'emerald' },
+                    { id: 'cardio-ped', label: 'Cardioped.', levelRequired: 8, icon: 'HeartPulse', color: 'emerald' },
+                    { id: 'neuro-ped', label: 'Neuroped.', levelRequired: 8, icon: 'Brain', color: 'emerald' },
+                    { id: 'uti-ped', label: 'UTI Ped.', levelRequired: 8, icon: 'Hospital', color: 'emerald' },
                 ]
             },
+
+            // ========== SAÚDE DA MULHER ==========
             {
                 id: 'go',
-                label: 'Ginecologia e Obstetrícia',
-                levelRequired: 5,
+                label: 'Ginecologia/Obstetrícia',
+                levelRequired: 3,
+                icon: 'Heart',
+                color: 'pink',
                 children: [
-                    { id: 'fetal', label: 'Medicina Materno-Fetal', levelRequired: 15 },
-                    { id: 'reproducao', label: 'Reprodução Humana', levelRequired: 15 },
-                    { id: 'endoscopia-gine', label: 'Endoscopia Ginecológica', levelRequired: 15 },
-                    { id: 'urogine', label: 'Uroginecologia', levelRequired: 15 },
-                    { id: 'ptgi', label: 'Patologia Trato Genital Inf.', levelRequired: 15 },
-                    { id: 'onco-gine', label: 'Oncoginecologia', levelRequired: 15 },
+                    { id: 'fetal', label: 'Medicina Fetal', levelRequired: 8, icon: 'Baby', color: 'pink' },
+                    { id: 'reproducao', label: 'Reprodução', levelRequired: 8, icon: 'Dna', color: 'pink' },
+                    { id: 'onco-gine', label: 'Oncogine', levelRequired: 8, icon: 'Ribbon', color: 'pink' },
                 ]
             },
-            {
-                id: 'psiquiatria',
-                label: 'Psiquiatria',
-                levelRequired: 5,
-                children: [
-                    { id: 'psiq-infancia', label: 'Infância e Adolescência', levelRequired: 15 },
-                    { id: 'forense', label: 'Psiquiatria Forense', levelRequired: 15 },
-                    { id: 'psicogeriatria', label: 'Psicogeriatria', levelRequired: 15 },
-                    { id: 'psiq-hosp', label: 'Interconsulta / Hospitalar', levelRequired: 15 },
-                ]
-            },
+
+            // ========== NEUROCIÊNCIAS ==========
             {
                 id: 'neurologia',
                 label: 'Neurologia',
-                levelRequired: 5,
+                levelRequired: 3,
+                icon: 'Brain',
+                color: 'purple',
                 children: [
-                    { id: 'neuro-vasc', label: 'Neurologia Vascular', levelRequired: 15 },
-                    { id: 'neuro-imuno', label: 'Neuroimunologia', levelRequired: 15 },
-                    { id: 'epilepsia', label: 'Epilepsia', levelRequired: 15 },
-                    { id: 'movimento', label: 'Distúrbios do Movimento', levelRequired: 15 },
-                    { id: 'neuro-musc', label: 'Neuromuscular', levelRequired: 15 },
-                    { id: 'cefaleias', label: 'Cefaleias', levelRequired: 15 },
-                    { id: 'cognitiva', label: 'Cognitiva / Demências', levelRequired: 15 },
+                    { id: 'neuro-vasc', label: 'Neuro Vascular', levelRequired: 8, icon: 'GitBranch', color: 'purple' },
+                    { id: 'epilepsia', label: 'Epilepsia', levelRequired: 8, icon: 'Zap', color: 'purple' },
+                    { id: 'movimento', label: 'Mov./Parkinson', levelRequired: 8, icon: 'Move', color: 'purple' },
+                    { id: 'cognitiva', label: 'Demências', levelRequired: 8, icon: 'BrainCircuit', color: 'purple' },
                 ]
             },
             {
                 id: 'neurocirurgia',
                 label: 'Neurocirurgia',
-                levelRequired: 5,
+                levelRequired: 3,
+                icon: 'BrainCog',
+                color: 'purple',
                 children: [
-                    { id: 'base-cranio', label: 'Base de Crânio', levelRequired: 15 },
-                    { id: 'nc-vasc', label: 'Neurocirurgia Vascular', levelRequired: 15 },
-                    { id: 'nc-func', label: 'Neurocirurgia Funcional', levelRequired: 15 },
-                    { id: 'nc-onco', label: 'Oncologia Neurocirúrgica', levelRequired: 15 },
-                    { id: 'nc-epi', label: 'Epilepsia Cirúrgica', levelRequired: 15 },
-                    { id: 'coluna', label: 'Coluna / Neuro-Ortopedia', levelRequired: 15 },
-                    { id: 'nc-ped', label: 'Neurocirurgia Pediátrica', levelRequired: 15 },
+                    { id: 'coluna', label: 'Coluna', levelRequired: 8, icon: 'Bone', color: 'purple' },
+                    { id: 'base-cranio', label: 'Base Crânio', levelRequired: 8, icon: 'Skull', color: 'purple' },
                 ]
             },
+            {
+                id: 'psiquiatria',
+                label: 'Psiquiatria',
+                levelRequired: 3,
+                icon: 'Smile',
+                color: 'purple',
+                children: [
+                    { id: 'psiq-infancia', label: 'Infância/Adol.', levelRequired: 8, icon: 'Users', color: 'purple' },
+                    { id: 'forense', label: 'Forense', levelRequired: 8, icon: 'Scale', color: 'purple' },
+                ]
+            },
+
+            // ========== ORTOPEDIA ==========
             {
                 id: 'ortopedia',
-                label: 'Ortopedia e Traumatologia',
-                levelRequired: 5,
+                label: 'Ortopedia',
+                levelRequired: 3,
+                icon: 'Bone',
+                color: 'gray',
                 children: [
-                    { id: 'coluna-orto', label: 'Coluna', levelRequired: 15 },
-                    { id: 'ombro', label: 'Ombro e Cotovelo', levelRequired: 15 },
-                    { id: 'joelho', label: 'Joelho', levelRequired: 15 },
-                    { id: 'pe', label: 'Pé e Tornozelo', levelRequired: 15 },
-                    { id: 'mao-orto', label: 'Mão', levelRequired: 15 },
-                    { id: 'quadril', label: 'Quadril', levelRequired: 15 },
-                    { id: 'trauma-orto', label: 'Traumato-Ortopedia', levelRequired: 15 },
+                    { id: 'coluna-orto', label: 'Coluna', levelRequired: 8, icon: 'Bone', color: 'gray' },
+                    { id: 'joelho', label: 'Joelho', levelRequired: 8, icon: 'CircleDot', color: 'gray' },
+                    { id: 'ombro', label: 'Ombro', levelRequired: 8, icon: 'Dumbbell', color: 'gray' },
+                    { id: 'trauma-orto', label: 'Trauma', levelRequired: 8, icon: 'Wrench', color: 'gray' },
                 ]
             },
-            {
-                id: 'anestesia',
-                label: 'Anestesiologia',
-                levelRequired: 5,
-                children: [
-                    { id: 'dor', label: 'Dor', levelRequired: 15 },
-                    { id: 'paliativos-anes', label: 'Cuidados Paliativos', levelRequired: 15 },
-                    { id: 'cardio-anes', label: 'Anestesia Cardíaca', levelRequired: 15 },
-                    { id: 'ped-anes', label: 'Anestesia Pediátrica', levelRequired: 15 },
-                    { id: 'neuro-anes', label: 'Neuroanestesia', levelRequired: 15 },
-                    { id: 'regional', label: 'Anestesia Regional', levelRequired: 15 },
-                ]
-            },
-            {
-                id: 'emergencia',
-                label: 'Medicina de Emergência',
-                levelRequired: 5,
-                children: [
-                    { id: 'eco-emerg', label: 'Ecografia em Emergências', levelRequired: 15 },
-                    { id: 'trauma-emerg', label: 'Trauma', levelRequired: 15 },
-                    { id: 'uti-emerg', label: 'Terapia Intensiva', levelRequired: 15 },
-                ]
-            },
-            {
-                id: 'uti',
-                label: 'Terapia Intensiva',
-                levelRequired: 5,
-                children: [
-                    { id: 'uti-adulto', label: 'Intensivista Adulto', levelRequired: 15 },
-                    { id: 'uti-ped-espec', label: 'Intensivista Pediátrico', levelRequired: 15 },
-                    { id: 'uti-neo', label: 'Intensivista Neonatal', levelRequired: 15 },
-                ]
-            },
+
+            // ========== DIAGNÓSTICO ==========
             {
                 id: 'radio',
                 label: 'Radiologia',
-                levelRequired: 5,
+                levelRequired: 3,
+                icon: 'ScanLine',
+                color: 'amber',
                 children: [
-                    { id: 'radio-interv', label: 'Radiologia Intervencionista', levelRequired: 15 },
-                    { id: 'neuro-radio', label: 'Neurorradiologia', levelRequired: 15 },
-                    { id: 'radio-musc', label: 'Musculoesquelética', levelRequired: 15 },
-                    { id: 'mama', label: 'Radiologia de Mama', levelRequired: 15 },
-                    { id: 'cardio-img', label: 'Cardiovascular', levelRequired: 15 },
-                    { id: 'radio-abd', label: 'Abdominal', levelRequired: 15 },
-                    { id: 'radio-torax', label: 'Tórax', levelRequired: 15 },
+                    { id: 'radio-interv', label: 'Intervencionista', levelRequired: 8, icon: 'Syringe', color: 'amber' },
+                    { id: 'neuro-radio', label: 'Neuroradio', levelRequired: 8, icon: 'Brain', color: 'amber' },
+                    { id: 'mama', label: 'Mamografia', levelRequired: 8, icon: 'Scan', color: 'amber' },
                 ]
             },
             {
                 id: 'patologia',
                 label: 'Patologia',
-                levelRequired: 5,
+                levelRequired: 3,
+                icon: 'Microscope',
+                color: 'amber',
                 children: [
-                    { id: 'pato-cir', label: 'Patologia Cirúrgica', levelRequired: 15 },
-                    { id: 'hemato-pato', label: 'Hematopatologia', levelRequired: 15 },
-                    { id: 'pato-mol', label: 'Patologia Molecular', levelRequired: 15 },
-                    { id: 'pato-for', label: 'Patologia Forense', levelRequired: 15 },
+                    { id: 'pato-cir', label: 'Cirúrgica', levelRequired: 8, icon: 'Scissors', color: 'amber' },
+                    { id: 'pato-mol', label: 'Molecular', levelRequired: 8, icon: 'Dna', color: 'amber' },
+                ]
+            },
+
+            // ========== INTENSIVA/EMERGÊNCIA ==========
+            {
+                id: 'emergencia',
+                label: 'Emergência',
+                levelRequired: 3,
+                icon: 'Siren',
+                color: 'orange',
+                children: [
+                    { id: 'trauma-emerg', label: 'Trauma', levelRequired: 8, icon: 'Bandage', color: 'orange' },
+                    { id: 'eco-emerg', label: 'POCUS/US', levelRequired: 8, icon: 'Radio', color: 'orange' },
                 ]
             },
             {
-                id: 'med-nuclear',
-                label: 'Medicina Nuclear',
-                levelRequired: 5,
+                id: 'uti',
+                label: 'Terapia Intensiva',
+                levelRequired: 3,
+                icon: 'HeartPulse',
+                color: 'orange',
                 children: [
-                    { id: 'pet', label: 'PET-CT Avançado', levelRequired: 15 },
-                    { id: 'radioisotopos', label: 'Radioisótopos Terapêuticos', levelRequired: 15 },
-                    { id: 'onco-nuc', label: 'Onconuclear', levelRequired: 15 },
+                    { id: 'uti-adulto', label: 'UTI Adulto', levelRequired: 8, icon: 'BedDouble', color: 'orange' },
+                    { id: 'uti-neo', label: 'UTI Neonatal', levelRequired: 8, icon: 'Baby', color: 'orange' },
+                ]
+            },
+            {
+                id: 'anestesia',
+                label: 'Anestesiologia',
+                levelRequired: 3,
+                icon: 'Syringe',
+                color: 'orange',
+                children: [
+                    { id: 'dor', label: 'Dor Crônica', levelRequired: 8, icon: 'Frown', color: 'orange' },
+                    { id: 'cardio-anes', label: 'Cardíaca', levelRequired: 8, icon: 'HeartPulse', color: 'orange' },
+                ]
+            },
+
+            // ========== OUTRAS ==========
+            {
+                id: 'dermato',
+                label: 'Dermatologia',
+                levelRequired: 3,
+                icon: 'Paintbrush',
+                color: 'rose',
+                children: [
+                    { id: 'cosmiatria', label: 'Cosmiatria', levelRequired: 8, icon: 'Sparkles', color: 'rose' },
+                    { id: 'cir-dermato', label: 'Cirúrgica', levelRequired: 8, icon: 'Scissors', color: 'rose' },
                 ]
             },
             {
                 id: 'prev',
-                label: 'Preventiva e Social',
-                levelRequired: 5,
+                label: 'Med. Preventiva',
+                levelRequired: 3,
+                icon: 'BarChart3',
+                color: 'teal',
                 children: [
-                    { id: 'epidemio', label: 'Epidemiologia', levelRequired: 15 },
-                    { id: 'auditoria', label: 'Auditoria Médica', levelRequired: 15 },
-                    { id: 'gestao', label: 'Gestão em Saúde', levelRequired: 15 },
+                    { id: 'epidemio', label: 'Epidemiologia', levelRequired: 8, icon: 'TrendingUp', color: 'teal' },
+                    { id: 'gestao', label: 'Gestão', levelRequired: 8, icon: 'ClipboardList', color: 'teal' },
                 ]
             },
             {
                 id: 'trabalho',
-                label: 'Medicina do Trabalho',
-                levelRequired: 5,
+                label: 'Med. Trabalho',
+                levelRequired: 3,
+                icon: 'HardHat',
+                color: 'teal',
                 children: [
-                    { id: 'ergonomia', label: 'Ergonomia', levelRequired: 15 },
-                    { id: 'pericias', label: 'Perícias Ocupacionais', levelRequired: 15 },
+                    { id: 'ergonomia', label: 'Ergonomia', levelRequired: 8, icon: 'Armchair', color: 'teal' },
+                    { id: 'pericias', label: 'Perícias', levelRequired: 8, icon: 'FileText', color: 'teal' },
                 ]
             },
-            {
-                id: 'dermato',
-                label: 'Dermatologia',
-                levelRequired: 5,
-                children: [
-                    { id: 'dermatoscopia', label: 'Dermatoscopia Avançada', levelRequired: 15 },
-                    { id: 'cir-dermato', label: 'Cirurgia Dermatológica', levelRequired: 15 },
-                    { id: 'cosmiatria', label: 'Cosmiatria', levelRequired: 15 },
-                    { id: 'dermato-ped', label: 'Dermatopediatria', levelRequired: 15 },
-                ]
-            }
         ]
     }
 ];
+
+// Helper to flatten tree for easier access
+export const flattenTree = (nodes: ProfessionNode[], parentId?: string): ProfessionNode[] => {
+    return nodes.reduce<ProfessionNode[]>((acc, node) => {
+        const nodeWithParent = { ...node, parentId };
+        acc.push(nodeWithParent);
+        if (node.children) {
+            acc.push(...flattenTree(node.children, node.id));
+        }
+        return acc;
+    }, []);
+};
+
+export const allProfessions = flattenTree(professionTree);

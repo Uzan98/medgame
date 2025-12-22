@@ -136,6 +136,18 @@ class CasinoSounds {
     timeWarning() {
         this.playTone(880, 0.1, 'square', 0.15);
     }
+
+    // 💰 Coins earned - plays coins.mp3
+    coins() {
+        if (!this.isEnabled) return;
+        try {
+            const audio = new Audio('/coins.mp3');
+            audio.volume = 0.5;
+            audio.play().catch(e => console.warn('Coin sound failed:', e));
+        } catch (e) {
+            console.warn('Coin sound error:', e);
+        }
+    }
 }
 
 // Singleton instance
