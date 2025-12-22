@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode, useCallback 
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { loadGameState, saveGameState, debouncedSave } from '../lib/gameStateSync';
+import { syncUserProfile } from '../lib/profileSync';
 import { useGameStore } from '../store/gameStore';
 
 interface AuthContextType {
@@ -35,7 +36,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         if (user) {
             setSyncing(true);
-            loadGameState(user.id).finally(() => setSyncing(false));
+            loadGameState(user.id).then(() => {
+                // Sync user profile after loading game state
+                const displayName = user.user_metadata?.display_name;
+                syncUserProfile(user.id, user.email || '', displayName);
+            }).finally(() => setSyncing(false));
         }
     }, [user]);
 

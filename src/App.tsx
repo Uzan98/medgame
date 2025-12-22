@@ -21,6 +21,7 @@ import { ConsultaExpressPage } from './pages/ConsultaExpressPage'
 import { EcgGamePage } from './pages/EcgGamePage'
 import { MedDetectivePage } from './pages/MedDetectivePage'
 import { MedTriviaPage } from './pages/MedTriviaPage'
+import { FriendsPage } from './pages/FriendsPage'
 import { AuthPage } from './pages/AuthPage'
 import { LandingPage } from './pages/LandingPage'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
@@ -122,6 +123,7 @@ function App() {
                         <Route path="games/detective" element={<MedDetectivePage />} />
                         <Route path="games/trivia" element={<MedTriviaPage />} />
                         <Route path="profile" element={<Profile />} />
+                        <Route path="friends" element={<FriendsPage />} />
                         <Route path="messages" element={<MessagesPage />} />
                     </Route>
 

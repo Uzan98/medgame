@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, ShoppingCart, Trophy, Mail, Plus, Menu, X, GraduationCap, HelpCircle, BookOpen, LogIn, Cloud, Stethoscope, Gamepad2 } from 'lucide-react';
+import { Home, ShoppingCart, Trophy, Mail, Plus, Menu, X, GraduationCap, HelpCircle, LogIn, Cloud, Stethoscope, Gamepad2, Users } from 'lucide-react';
 import clsx from 'clsx';
 import { useGameStore } from '../store/gameStore';
 import { useMessageStore } from '../store/messageStore';
@@ -27,9 +27,9 @@ export const Layout = ({ onShowTutorial }: LayoutProps) => {
         { icon: Home, label: 'Início', path: '/', tutorialId: 'nav-home' },
         { icon: Gamepad2, label: 'Games', path: '/games', tutorialId: 'nav-games' },
         { icon: GraduationCap, label: 'Carreira', path: '/career', tutorialId: 'nav-career' },
+        { icon: Users, label: 'Amigos', path: '/friends', tutorialId: 'nav-friends' },
         { icon: ShoppingCart, label: 'Loja', path: '/shop', tutorialId: 'nav-shop' },
         { icon: Trophy, label: 'Ranking', path: '/leaderboard', tutorialId: 'nav-ranking' },
-        { icon: BookOpen, label: 'Estudo', path: '/study', tutorialId: 'nav-study' },
     ];
 
     const xpInCurrentLevel = xp % 1000;
