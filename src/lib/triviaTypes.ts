@@ -1,7 +1,5 @@
 // MedTrivia Types - Perguntados-style Medical Quiz Game
 
-import { type LucideIcon } from 'lucide-react';
-
 // The 6 major medical specialty categories
 export interface TriviaCategory {
     id: string;

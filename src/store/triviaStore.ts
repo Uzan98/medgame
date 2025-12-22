@@ -48,7 +48,7 @@ const mapQuestionToRow = (q: Omit<TriviaQuestion, 'id'>) => ({
     explanation: q.explanation || null
 });
 
-export const useTriviaStore = create<TriviaStoreState>((set, get) => ({
+export const useTriviaStore = create<TriviaStoreState>((set) => ({
     questions: SAMPLE_TRIVIA_QUESTIONS, // Fallback
     isLoading: false,
     error: null,
