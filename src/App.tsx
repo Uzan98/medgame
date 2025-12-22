@@ -20,6 +20,7 @@ import { PlantaoInfinitoPage } from './pages/PlantaoInfinitoPage'
 import { ConsultaExpressPage } from './pages/ConsultaExpressPage'
 import { EcgGamePage } from './pages/EcgGamePage'
 import { MedDetectivePage } from './pages/MedDetectivePage'
+import { MedTriviaPage } from './pages/MedTriviaPage'
 import { AuthPage } from './pages/AuthPage'
 import { LandingPage } from './pages/LandingPage'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
@@ -38,6 +39,8 @@ import { AdminEcgCasesList } from './pages/admin/AdminEcgCasesList'
 import { AdminEcgCaseEditor } from './pages/admin/AdminEcgCaseEditor'
 import { AdminDetectiveCasesList } from './pages/admin/AdminDetectiveCasesList'
 import { AdminDetectiveCaseEditor } from './pages/admin/AdminDetectiveCaseEditor'
+import { AdminTriviaList } from './pages/admin/AdminTriviaList'
+import { AdminTriviaEditor } from './pages/admin/AdminTriviaEditor'
 import { TutorialOverlay } from './components/TutorialOverlay'
 import { AuthProvider } from './contexts/AuthContext'
 
@@ -115,6 +118,7 @@ function App() {
                         <Route path="games/consulta-express" element={<ConsultaExpressPage />} />
                         <Route path="games/ecg" element={<EcgGamePage />} />
                         <Route path="games/detective" element={<MedDetectivePage />} />
+                        <Route path="games/trivia" element={<MedTriviaPage />} />
                         <Route path="profile" element={<Profile />} />
                         <Route path="messages" element={<MessagesPage />} />
                     </Route>
@@ -145,6 +149,9 @@ function App() {
                         <Route path="detective" element={<AdminDetectiveCasesList />} />
                         <Route path="detective/new" element={<AdminDetectiveCaseEditor />} />
                         <Route path="detective/:id" element={<AdminDetectiveCaseEditor />} />
+                        <Route path="trivia" element={<AdminTriviaList />} />
+                        <Route path="trivia/new" element={<AdminTriviaEditor />} />
+                        <Route path="trivia/edit/:id" element={<AdminTriviaEditor />} />
                     </Route>
                 </Routes>
             </Router>

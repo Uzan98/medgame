@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft,
     Heart,
@@ -16,7 +17,10 @@ import {
     Shield,
     Coffee,
     Star,
-    Eye
+    Eye,
+    User,
+    UserPlus,
+    Ambulance
 } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { useToastStore } from '../store/toastStore';
@@ -548,7 +552,14 @@ export const PlantaoInfinitoPage: React.FC = () => {
             <div className="h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-900/30 to-slate-900">
                 <div className="text-center max-w-lg w-full px-4">
                     <div className="mb-6">
-                        <div className="text-6xl mb-4">🎉</div>
+                        <motion.div
+                            initial={{ scale: 0, rotate: -180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ type: "spring", stiffness: 200, damping: 10 }}
+                            className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg shadow-yellow-500/30"
+                        >
+                            <Trophy className="w-10 h-10 text-white" />
+                        </motion.div>
                         <h2 className="text-2xl font-black text-white mb-2">Wave {gameState.currentWave} Completa!</h2>
                         <p className="text-slate-400">Escolha uma carta para a próxima wave</p>
                     </div>
@@ -657,17 +668,51 @@ export const PlantaoInfinitoPage: React.FC = () => {
             gameState.isBlackout && 'brightness-[0.1]'
         )}>
             {/* Chaos Event Notification */}
-            {gameState.activeEvent && (
-                <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-bounce">
-                    <div className="bg-slate-800 border border-yellow-500/50 rounded-xl px-6 py-3 flex items-center gap-3 shadow-lg shadow-yellow-500/20">
-                        <span className="text-3xl">{gameState.activeEvent.icon}</span>
-                        <div>
-                            <p className="font-bold text-yellow-400">{gameState.activeEvent.title}</p>
-                            <p className="text-sm text-slate-300">{gameState.activeEvent.description}</p>
+            <AnimatePresence>
+                {gameState.activeEvent && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -50, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -30, scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        className="fixed top-4 left-1/2 -translate-x-1/2 z-50"
+                    >
+                        <div className={clsx(
+                            'border rounded-xl px-5 py-3 flex items-center gap-3 shadow-lg backdrop-blur-sm',
+                            gameState.activeEvent.effect === 'add_patients' || gameState.activeEvent.effect === 'add_chaos'
+                                ? 'bg-red-950/90 border-red-500/50 shadow-red-500/20'
+                                : gameState.activeEvent.effect === 'reduce_chaos' || gameState.activeEvent.effect === 'remove_patients'
+                                    ? 'bg-emerald-950/90 border-emerald-500/50 shadow-emerald-500/20'
+                                    : 'bg-slate-800/90 border-yellow-500/50 shadow-yellow-500/20'
+                        )}>
+                            <div className={clsx(
+                                'w-10 h-10 rounded-lg flex items-center justify-center',
+                                gameState.activeEvent.effect === 'add_patients' ? 'bg-red-500/20' :
+                                    gameState.activeEvent.effect === 'reduce_chaos' ? 'bg-emerald-500/20' :
+                                        'bg-yellow-500/20'
+                            )}>
+                                {gameState.activeEvent.effect === 'add_patients' && <Ambulance className="w-5 h-5 text-red-400" />}
+                                {gameState.activeEvent.effect === 'remove_patients' && <UserPlus className="w-5 h-5 text-emerald-400" />}
+                                {gameState.activeEvent.effect === 'reduce_chaos' && <Coffee className="w-5 h-5 text-emerald-400" />}
+                                {gameState.activeEvent.effect === 'add_chaos' && <AlertTriangle className="w-5 h-5 text-red-400" />}
+                                {gameState.activeEvent.effect === 'double_points' && <Star className="w-5 h-5 text-yellow-400" />}
+                                {gameState.activeEvent.effect === 'blackout' && <Zap className="w-5 h-5 text-yellow-400" />}
+                            </div>
+                            <div>
+                                <p className={clsx(
+                                    'font-bold text-sm',
+                                    gameState.activeEvent.effect === 'add_patients' || gameState.activeEvent.effect === 'add_chaos'
+                                        ? 'text-red-400'
+                                        : gameState.activeEvent.effect === 'reduce_chaos' || gameState.activeEvent.effect === 'remove_patients'
+                                            ? 'text-emerald-400'
+                                            : 'text-yellow-400'
+                                )}>{gameState.activeEvent.title}</p>
+                                <p className="text-xs text-slate-300">{gameState.activeEvent.description}</p>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Header with Wave & Stats */}
             <div className="mb-3 shrink-0">
@@ -728,26 +773,48 @@ export const PlantaoInfinitoPage: React.FC = () => {
 
             {/* Patient Queue */}
             <div className="mb-3 shrink-0">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-2">
                     <Users className="w-4 h-4 text-slate-400" />
-                    <span className="text-xs text-slate-400">Fila: {gameState.queue.length} pacientes</span>
+                    <span className="text-xs text-slate-400 font-medium">Sala de espera</span>
+                    <span className="px-2 py-0.5 bg-slate-700 rounded text-xs text-white font-bold">
+                        {gameState.queue.length}
+                    </span>
                 </div>
-                <div className="flex gap-1 overflow-x-auto pb-1">
-                    {gameState.queue.slice(0, 10).map((_, i) => (
-                        <div
-                            key={i}
-                            className={clsx(
-                                'w-6 h-6 rounded flex items-center justify-center text-sm shrink-0',
-                                i < 3 ? 'bg-red-500/30' : i < 6 ? 'bg-yellow-500/20' : 'bg-slate-700/50'
-                            )}
+                <div className="flex gap-1.5 overflow-x-auto pb-1">
+                    <AnimatePresence mode="popLayout">
+                        {gameState.queue.slice(0, 12).map((patient, i) => (
+                            <motion.div
+                                key={patient.id || i}
+                                layout
+                                initial={{ opacity: 0, scale: 0.5, x: 50 }}
+                                animate={{ opacity: 1, scale: 1, x: 0 }}
+                                exit={{ opacity: 0, scale: 0.5, x: -50 }}
+                                transition={{
+                                    type: "spring",
+                                    stiffness: 500,
+                                    damping: 30,
+                                    delay: i * 0.03
+                                }}
+                                className={clsx(
+                                    'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition-colors',
+                                    i < 3
+                                        ? 'bg-red-500/20 border-red-500/40 text-red-400'
+                                        : i < 6
+                                            ? 'bg-yellow-500/15 border-yellow-500/30 text-yellow-400'
+                                            : 'bg-slate-800/80 border-slate-700/50 text-slate-500'
+                                )}
+                            >
+                                <User className="w-4 h-4" />
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                    {gameState.queue.length > 12 && (
+                        <motion.div
+                            layout
+                            className="px-2 h-8 rounded-lg bg-slate-800/50 border border-slate-700 flex items-center justify-center text-xs text-slate-400 font-medium shrink-0"
                         >
-                            🧑
-                        </div>
-                    ))}
-                    {gameState.queue.length > 10 && (
-                        <div className="w-6 h-6 rounded bg-slate-700/50 flex items-center justify-center text-xs text-slate-400 shrink-0">
-                            +{gameState.queue.length - 10}
-                        </div>
+                            +{gameState.queue.length - 12}
+                        </motion.div>
                     )}
                 </div>
             </div>
@@ -882,7 +949,7 @@ export const PlantaoInfinitoPage: React.FC = () => {
                                 : 'bg-red-500 text-white'
                         )}
                     >
-                        {gameState.casesInWave >= 5 ? '🃏 Escolher Carta' : 'Próximo Paciente →'}
+                        {gameState.casesInWave >= 5 ? 'Escolher Carta' : 'Próximo Paciente'}
                     </button>
                 )}
             </div>

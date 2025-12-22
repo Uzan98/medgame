@@ -17,6 +17,7 @@ import {
     Zap,
     Swords,
     Search,
+    Dices,
     type LucideIcon
 } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
@@ -121,6 +122,18 @@ const games: GameCard[] = [
         reward: 'Até 150 XP',
         gradient: 'from-cyan-500 to-blue-600',
         bgGlow: 'shadow-cyan-500/20'
+    },
+    {
+        id: 'med-trivia',
+        title: 'MedTrivia',
+        description: 'Gire a roleta e conquiste coroas em todas as especialidades!',
+        icon: Dices,
+        iconColor: 'text-amber-400',
+        path: '/games/trivia',
+        requiredLevel: 1,
+        reward: 'Até 500 XP',
+        gradient: 'from-amber-500 to-orange-600',
+        bgGlow: 'shadow-amber-500/20'
     },
     {
         id: 'quiz-relampago',
