@@ -217,46 +217,55 @@ export const FriendsPage: React.FC = () => {
                                         key={friend.id}
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        className="flex items-center gap-3 bg-slate-800/50 border border-slate-700/50 rounded-xl p-3"
+                                        className="flex items-center gap-3 bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 hover:border-cyan-500/30 transition-colors"
                                     >
-                                        {/* Avatar */}
-                                        <div className="relative">
-                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 p-0.5">
-                                                <div className="w-full h-full rounded-full bg-slate-800 overflow-hidden">
-                                                    <img
-                                                        src={friend.profile?.avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${friend.friendId}`}
-                                                        alt="Avatar"
-                                                        className="w-full h-full object-cover"
-                                                    />
+                                        {/* Clickable Area - navigates to profile */}
+                                        <div
+                                            className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+                                            onClick={() => navigate(`/friends/${friend.friendId}`)}
+                                        >
+                                            {/* Avatar */}
+                                            <div className="relative shrink-0">
+                                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 p-0.5">
+                                                    <div className="w-full h-full rounded-full bg-slate-800 overflow-hidden">
+                                                        <img
+                                                            src={friend.profile?.avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${friend.friendId}`}
+                                                            alt="Avatar"
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                {/* Level badge */}
+                                                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center text-[10px] font-bold text-black">
+                                                    {friend.profile?.level || 1}
                                                 </div>
                                             </div>
-                                            {/* Level badge */}
-                                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center text-[10px] font-bold text-black">
-                                                {friend.profile?.level || 1}
-                                            </div>
-                                        </div>
 
-                                        {/* Info */}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="font-bold text-white truncate">
-                                                {friend.profile?.displayName || 'Jogador'}
-                                            </div>
-                                            <div className="flex items-center gap-3 text-xs text-slate-400">
-                                                <span className="flex items-center gap-1">
-                                                    <Crown className="w-3 h-3 text-yellow-400" />
-                                                    Nv.{friend.profile?.level || 1}
-                                                </span>
-                                                <span className="flex items-center gap-1">
-                                                    <Flame className="w-3 h-3 text-orange-400" />
-                                                    {friend.profile?.streak || 0}d
-                                                </span>
+                                            {/* Info */}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-bold text-white truncate">
+                                                    {friend.profile?.displayName || 'Jogador'}
+                                                </div>
+                                                <div className="flex items-center gap-3 text-xs text-slate-400">
+                                                    <span className="flex items-center gap-1">
+                                                        <Crown className="w-3 h-3 text-yellow-400" />
+                                                        Nv.{friend.profile?.level || 1}
+                                                    </span>
+                                                    <span className="flex items-center gap-1">
+                                                        <Flame className="w-3 h-3 text-orange-400" />
+                                                        {friend.profile?.streak || 0}d
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
 
                                         {/* Actions */}
                                         <button
-                                            onClick={() => handleRemoveFriend(friend.friendId)}
-                                            className="p-2 text-slate-500 hover:text-red-400 transition-colors"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleRemoveFriend(friend.friendId);
+                                            }}
+                                            className="p-2 text-slate-500 hover:text-red-400 transition-colors shrink-0"
                                             title="Remover amigo"
                                         >
                                             <UserX className="w-5 h-5" />

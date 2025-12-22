@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { loadGameState, saveGameState, debouncedSave } from '../lib/gameStateSync';
 import { syncUserProfile } from '../lib/profileSync';
 import { useGameStore } from '../store/gameStore';
+import { useRealtimeMessageStore } from '../store/realtimeMessageStore';
 
 interface AuthContextType {
     user: User | null;
@@ -40,7 +41,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 // Sync user profile after loading game state
                 const displayName = user.user_metadata?.display_name;
                 syncUserProfile(user.id, user.email || '', displayName);
+
+                // Subscribe to realtime messages and fetch existing
+                const { subscribeToMessages, fetchMessages } = useRealtimeMessageStore.getState();
+                subscribeToMessages(user.id);
+                fetchMessages(user.id);
             }).finally(() => setSyncing(false));
+        } else {
+            // Unsubscribe when logged out
+            useRealtimeMessageStore.getState().unsubscribe();
         }
     }, [user]);
 
