@@ -231,8 +231,6 @@ export const useRealtimeMessageStore = create<RealtimeMessageState>((set, get) =
         messages.forEach((msg) => {
             // Determine the friend ID (the other person in the conversation)
             const friendId = msg.senderId === userId ? msg.receiverId : msg.senderId;
-            const friendName = msg.senderId === userId ? 'Você' : (msg.senderName || 'Jogador');
-            const friendAvatar = msg.senderId !== userId ? msg.senderAvatar : undefined;
 
             const existing = conversationMap.get(friendId);
 

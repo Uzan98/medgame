@@ -3,8 +3,9 @@ import { Home, ShoppingCart, Trophy, Mail, Plus, Menu, X, GraduationCap, HelpCir
 import clsx from 'clsx';
 import { useGameStore } from '../store/gameStore';
 import { useMessageStore } from '../store/messageStore';
+import { useRealtimeMessageStore } from '../store/realtimeMessageStore';
 import { useAuth } from '../contexts/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface LayoutProps {
     onShowTutorial?: () => void;
@@ -13,12 +14,26 @@ interface LayoutProps {
 export const Layout = ({ onShowTutorial }: LayoutProps) => {
     const { pathname } = useLocation();
     const { coins, xp, level } = useGameStore();
-    const { messages } = useMessageStore();
+    const { messages: systemMessages } = useMessageStore();
+    const { messages: directMessages, fetchMessages, subscribeToMessages, unsubscribe } = useRealtimeMessageStore();
     const { user, syncing } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    // Ensure messages exists before filtering (safe access)
-    const unreadCount = messages ? messages.filter(m => !m.read).length : 0;
+    // Subscribe to realtime messages when logged in
+    useEffect(() => {
+        if (user?.id) {
+            fetchMessages(user.id);
+            subscribeToMessages(user.id);
+            return () => unsubscribe();
+        }
+    }, [user?.id]);
+
+    // Combine unread counts from system and direct messages
+    const systemUnreadCount = systemMessages ? systemMessages.filter(m => !m.read).length : 0;
+    const directUnreadCount = user?.id
+        ? directMessages.filter(m => !m.read && m.receiverId === user.id).length
+        : 0;
+    const unreadCount = systemUnreadCount + directUnreadCount;
 
     // Get display name from user metadata
     const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Dr. Usuário';

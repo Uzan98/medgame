@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
 import {
-    Mail, Trash2, ChevronLeft, Gift, User, Clock, AlertCircle, CheckCircle,
-    Users, MessageCircle, Send, ArrowLeft, Loader2
+    Mail, Trash2, Gift, User, Clock, AlertCircle, CheckCircle,
+    MessageCircle, Send, ArrowLeft, Loader2
 } from 'lucide-react';
 import { useMessageStore, Message } from '../store/messageStore';
 import { useRealtimeMessageStore } from '../store/realtimeMessageStore';
@@ -15,7 +14,6 @@ import { ptBR } from 'date-fns/locale';
 type TabType = 'direct' | 'system';
 
 export const MessagesPage: React.FC = () => {
-    const navigate = useNavigate();
     const { user } = useAuth();
     const { messages: systemMessages, markAsRead: markSystemAsRead, deleteMessage: deleteSystemMessage, claimReward } = useMessageStore();
     const {
@@ -63,7 +61,7 @@ export const MessagesPage: React.FC = () => {
                     if (profile) {
                         profiles[conv.friendId] = {
                             displayName: profile.displayName,
-                            avatarUrl: profile.avatarUrl
+                            avatarUrl: profile.avatarUrl ?? undefined
                         };
                     }
                 }
@@ -119,7 +117,6 @@ export const MessagesPage: React.FC = () => {
 
         if (result.success) {
             setMessageInput('');
-            // Refresh messages to get the new one
             await fetchMessages(user.id);
         }
     };
@@ -242,7 +239,6 @@ export const MessagesPage: React.FC = () => {
                                                         />
                                                     </div>
                                                 </div>
-                                                {/* Online indicator (placeholder) */}
                                                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-800" />
                                             </div>
 
