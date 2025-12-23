@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft,
@@ -9,7 +9,9 @@ import {
     XCircle,
     Zap,
     Crown,
-    Heart
+    Heart,
+    Swords,
+    Users
 } from 'lucide-react';
 import { SpinningWheel } from '../components/trivia/SpinningWheel';
 import {
@@ -21,6 +23,9 @@ import { useGameStore } from '../store/gameStore';
 import { useTriviaStore } from '../store/triviaStore';
 import { casinoSounds } from '../lib/casinoSounds';
 import { triggerCoinReward } from '../components/CoinRewardAnimation';
+import { ChallengeFriendModal } from '../components/challenges/ChallengeFriendModal';
+import { useGameChallengeStore } from '../store/gameChallengeStore';
+import { useAuth } from '../contexts/AuthContext';
 import clsx from 'clsx';
 
 const QUESTION_TIME = 15; // seconds per question
@@ -29,8 +34,16 @@ const CORRECT_FOR_CROWN = 3;
 
 export const MedTriviaPage: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const { user } = useAuth();
     const { addCoins, addXP } = useGameStore();
     const { questions, fetchQuestions } = useTriviaStore();
+    const { submitScore, fetchMyChallenges } = useGameChallengeStore();
+
+    // Challenge mode state
+    const challengeId = searchParams.get('challenge');
+    const [showChallengeModal, setShowChallengeModal] = useState(false);
+    const [activeChallengeId, setActiveChallengeId] = useState<string | null>(null);
 
     const [gameState, setGameState] = useState<TriviaGameState>({
         phase: 'idle',
@@ -46,10 +59,20 @@ export const MedTriviaPage: React.FC = () => {
         timeLeft: QUESTION_TIME
     });
 
-    // Fetch questions from Supabase on mount
+    // Fetch questions and challenges from Supabase on mount
     useEffect(() => {
         fetchQuestions();
-    }, [fetchQuestions]);
+        if (user?.id) {
+            fetchMyChallenges(user.id, 'trivia');
+        }
+    }, [fetchQuestions, user?.id]);
+
+    // Handle challenge mode from URL
+    useEffect(() => {
+        if (challengeId) {
+            setActiveChallengeId(challengeId);
+        }
+    }, [challengeId]);
 
     // Timer effect
     useEffect(() => {
@@ -204,7 +227,7 @@ export const MedTriviaPage: React.FC = () => {
     };
 
     // End game and give rewards
-    const endGameWithRewards = (isVictory: boolean) => {
+    const endGameWithRewards = async (isVictory: boolean) => {
         const crownsCount = Object.values(gameState.crowns).filter(Boolean).length;
         const baseReward = isVictory ? 500 : crownsCount * 50;
         const streakBonus = gameState.streak * 10;
@@ -215,6 +238,22 @@ export const MedTriviaPage: React.FC = () => {
 
         // Trigger animated coin reward
         triggerCoinReward(total);
+
+        // If in challenge mode, submit score using universal store
+        if (activeChallengeId && user?.id) {
+            await submitScore(activeChallengeId, user.id, {
+                score: gameState.totalCorrect,
+                crowns: crownsCount
+            });
+            // Refresh challenges
+            fetchMyChallenges(user.id, 'trivia');
+        }
+    };
+
+    // Handle challenge created - start playing immediately as challenger
+    const handleChallengeCreated = (newChallengeId: string) => {
+        setShowChallengeModal(false);
+        setActiveChallengeId(newChallengeId);
     };
 
     // Victory screen
@@ -624,6 +663,24 @@ export const MedTriviaPage: React.FC = () => {
                             progress={gameState.progress}
                         />
                     </div>
+
+                    {/* Challenge Buttons */}
+                    <div className="flex gap-3 mt-4">
+                        <button
+                            onClick={() => setShowChallengeModal(true)}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl text-sm hover:scale-105 transition-transform shadow-lg shadow-purple-500/30"
+                        >
+                            <Swords className="w-4 h-4" />
+                            Desafiar Amigo
+                        </button>
+                        <button
+                            onClick={() => navigate('/games/trivia/challenges')}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-slate-800/80 border border-purple-500/30 text-purple-400 font-medium rounded-xl text-sm hover:bg-slate-700 transition-colors"
+                        >
+                            <Users className="w-4 h-4" />
+                            Ver Desafios
+                        </button>
+                    </div>
                 </div>
 
                 {/* Footer Stats / Lives Card */}
@@ -656,6 +713,14 @@ export const MedTriviaPage: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Challenge Friend Modal */}
+            <ChallengeFriendModal
+                isOpen={showChallengeModal}
+                onClose={() => setShowChallengeModal(false)}
+                gameType="trivia"
+                onChallengeCreated={handleChallengeCreated}
+            />
         </div>
     );
 };

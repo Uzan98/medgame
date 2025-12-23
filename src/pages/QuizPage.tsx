@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Zap, CheckCircle, XCircle, ChevronRight, Trophy, Target, Heart } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Clock, Zap, CheckCircle, XCircle, ChevronRight, Trophy, Target, Heart, Swords, Users } from 'lucide-react';
 import { QuizCase, shuffleOptions, quizCases } from '../lib/quizCases';
 import { useAdminStore } from '../store/adminStore';
 import clsx from 'clsx';
 import { useGameStore } from '../store/gameStore';
+import { useGameChallengeStore } from '../store/gameChallengeStore';
+import { useAuth } from '../contexts/AuthContext';
+import { ChallengeFriendModal } from '../components/challenges/ChallengeFriendModal';
 
 type GameState = 'start' | 'playing' | 'answer' | 'result';
 
@@ -15,7 +18,10 @@ const CASES_PER_GAME = 5;
 
 export const QuizPage: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const { user } = useAuth();
     const { addXP, addCoins, updateStats, canPlay, drainEnergy, changeReputation } = useGameStore();
+    const { submitScore, fetchMyChallenges, getPendingChallenges } = useGameChallengeStore();
 
     const [gameState, setGameState] = useState<GameState>('start');
     const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
@@ -31,6 +37,10 @@ export const QuizPage: React.FC = () => {
     const [showHintAnimation, setShowHintAnimation] = useState(false);
     const [heartbeatSpeed, setHeartbeatSpeed] = useState(1);
 
+    // Challenge state
+    const [showChallengeModal, setShowChallengeModal] = useState(false);
+    const [activeChallengeId, setActiveChallengeId] = useState<string | null>(null);
+
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const hintTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -41,6 +51,23 @@ export const QuizPage: React.FC = () => {
 
     // Merge all quizzes
     const allQuizzes = useMemo(() => [...quizCases, ...customQuizzes], [customQuizzes]);
+
+    // Check for challenge in URL params
+    useEffect(() => {
+        const challengeId = searchParams.get('challenge');
+        if (challengeId) {
+            setActiveChallengeId(challengeId);
+        }
+    }, [searchParams]);
+
+    // Fetch pending challenges on mount
+    useEffect(() => {
+        if (user?.id) {
+            fetchMyChallenges(user.id, 'quiz');
+        }
+    }, [user?.id]);
+
+    const pendingChallenges = user?.id ? getPendingChallenges(user.id, 'quiz') : [];
 
     // Initialize game
     const startGame = useCallback(() => {
@@ -190,13 +217,29 @@ export const QuizPage: React.FC = () => {
                 addXP(xpEarned);
                 addCoins(coinsEarned);
             }
+
+            // Submit score if in challenge mode
+            if (activeChallengeId && user?.id) {
+                submitScore(activeChallengeId, user.id, {
+                    score,
+                    correctAnswers,
+                }).then(() => {
+                    fetchMyChallenges(user.id, 'quiz');
+                });
+            }
         }
 
         // Reset the ref when starting a new game
         if (gameState === 'start') {
             hasAwardedRef.current = false;
         }
-    }, [gameState, score, results, drainEnergy, updateStats, addXP, addCoins]);
+    }, [gameState, score, results, drainEnergy, updateStats, addXP, addCoins, activeChallengeId, user?.id, submitScore, fetchMyChallenges]);
+
+    // Handle challenge created
+    const handleChallengeCreated = (challengeId: string) => {
+        setShowChallengeModal(false);
+        setActiveChallengeId(challengeId);
+    };
 
 
     const renderStart = () => (
@@ -255,6 +298,29 @@ export const QuizPage: React.FC = () => {
             >
                 {canPlay() ? '🎯 Iniciar Quiz (-10 Energia)' : 'Muito Cansado (Requer 40% Energia)'}
             </button>
+
+            {/* Challenge Buttons */}
+            <div className="flex gap-3 w-full max-w-md mt-4">
+                <button
+                    onClick={() => setShowChallengeModal(true)}
+                    className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-lg shadow-purple-500/20"
+                >
+                    <Swords className="w-5 h-5" />
+                    Desafiar Amigo
+                </button>
+                <button
+                    onClick={() => navigate('/quiz/challenges')}
+                    className="flex-1 py-3 bg-slate-800/50 border border-purple-500/30 text-purple-400 font-bold rounded-xl flex items-center justify-center gap-2 hover:border-purple-500/50 transition-colors relative"
+                >
+                    <Users className="w-5 h-5" />
+                    Ver Desafios
+                    {pendingChallenges.length > 0 && (
+                        <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center animate-pulse">
+                            {pendingChallenges.length}
+                        </span>
+                    )}
+                </button>
+            </div>
         </div>
     );
 
@@ -543,6 +609,14 @@ export const QuizPage: React.FC = () => {
           animation: slideIn 0.3s ease-out;
         }
       `}</style>
+
+            {/* Challenge Modal */}
+            <ChallengeFriendModal
+                isOpen={showChallengeModal}
+                onClose={() => setShowChallengeModal(false)}
+                gameType="quiz"
+                onChallengeCreated={handleChallengeCreated}
+            />
         </div>
     );
 };

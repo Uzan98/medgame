@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft,
     Heart,
     AlertTriangle,
+    AlertCircle,
     Zap,
     Clock,
     Users,
@@ -20,11 +21,15 @@ import {
     Eye,
     User,
     UserPlus,
-    Ambulance
+    Ambulance,
+    Swords
 } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { useToastStore } from '../store/toastStore';
 import { loadPlantaoCases, loadPlantaoEvents, PlantaoEvent } from '../lib/plantaoSync';
+import { useGameChallengeStore } from '../store/gameChallengeStore';
+import { useAuth } from '../contexts/AuthContext';
+import { ChallengeFriendModal } from '../components/challenges/ChallengeFriendModal';
 import clsx from 'clsx';
 
 // Sample mini-cases (fallback if database empty)
@@ -122,12 +127,20 @@ const getWaveSettings = (wave: number) => {
 
 export const PlantaoInfinitoPage: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const { user } = useAuth();
     const { addCoins, addXP } = useGameStore();
+    const { submitScore, fetchMyChallenges, getPendingChallenges } = useGameChallengeStore();
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const chaosRef = useRef<NodeJS.Timeout | null>(null);
     const eventRef = useRef<NodeJS.Timeout | null>(null);
 
+    // Challenge state
+    const [showChallengeModal, setShowChallengeModal] = useState(false);
+    const [activeChallengeId, setActiveChallengeId] = useState<string | null>(null);
+
     const [loading, setLoading] = useState(true);
+    const [showStart, setShowStart] = useState(true); // Show start screen first
     const [allCases, setAllCases] = useState<MiniCase[]>([]);
     const [allEvents, setAllEvents] = useState<PlantaoEvent[]>([]);
     const [gameState, setGameState] = useState<GameState>({
@@ -181,12 +194,36 @@ export const PlantaoInfinitoPage: React.FC = () => {
         };
     }, []);
 
-    // Start game when data is loaded
+    // Start game when player clicks start (showStart becomes false)
     useEffect(() => {
-        if (!loading && allCases.length > 0) {
+        if (!loading && !showStart && allCases.length > 0) {
             startGame();
         }
-    }, [loading, allCases]);
+    }, [loading, showStart, allCases]);
+
+    // Check for challenge in URL params
+    useEffect(() => {
+        const challengeId = searchParams.get('challenge');
+        if (challengeId) {
+            setActiveChallengeId(challengeId);
+        }
+    }, [searchParams]);
+
+    // Fetch pending challenges on mount
+    useEffect(() => {
+        if (user?.id) {
+            fetchMyChallenges(user.id, 'plantao');
+        }
+    }, [user?.id]);
+
+    // Get pending challenges for badge
+    const pendingChallenges = user?.id ? getPendingChallenges(user.id, 'plantao') : [];
+
+    // Handle challenge created
+    const handleChallengeCreated = (challengeId: string) => {
+        setShowChallengeModal(false);
+        setActiveChallengeId(challengeId);
+    };
 
     const startGame = () => {
         const shuffled = [...allCases].sort(() => Math.random() - 0.5);
@@ -500,7 +537,7 @@ export const PlantaoInfinitoPage: React.FC = () => {
         };
     };
 
-    const endGame = () => {
+    const endGame = async () => {
         if (timerRef.current) clearInterval(timerRef.current);
         if (chaosRef.current) clearInterval(chaosRef.current);
         if (eventRef.current) clearTimeout(eventRef.current);
@@ -510,6 +547,16 @@ export const PlantaoInfinitoPage: React.FC = () => {
             addCoins(reward);
             addXP(reward);
             useToastStore.getState().addToast(`+${reward} MediCoins! 🏥`, 'success');
+        }
+
+        // Submit score if in challenge mode
+        if (activeChallengeId && user?.id) {
+            await submitScore(activeChallengeId, user.id, {
+                score: gameState.score,
+                patientsAttended: gameState.casesResolved,
+                wave: gameState.currentWave
+            });
+            fetchMyChallenges(user.id, 'plantao');
         }
     };
 
@@ -534,6 +581,11 @@ export const PlantaoInfinitoPage: React.FC = () => {
         return 'COLAPSO!';
     };
 
+    // Handle starting the game
+    const handleStartGame = () => {
+        setShowStart(false);
+    };
+
     // Loading screen
     if (loading) {
         return (
@@ -542,6 +594,113 @@ export const PlantaoInfinitoPage: React.FC = () => {
                     <Loader2 className="w-12 h-12 text-cyan-400 animate-spin mx-auto mb-4" />
                     <p className="text-slate-400">Preparando plantão...</p>
                 </div>
+            </div>
+        );
+    }
+
+    // Start screen
+    if (showStart) {
+        return (
+            <div className="h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-cyan-900/20 to-slate-900 p-4">
+                <div className="max-w-md w-full">
+                    {/* Header */}
+                    <div className="text-center mb-8">
+                        <div className="relative inline-block mb-4">
+                            <div className="absolute inset-0 bg-cyan-500/30 rounded-full blur-xl animate-pulse"></div>
+                            <div className="relative w-24 h-24 bg-gradient-to-br from-cyan-500 to-emerald-500 rounded-full flex items-center justify-center">
+                                <Heart className="w-12 h-12 text-white animate-pulse" />
+                            </div>
+                        </div>
+                        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">
+                            Plantão Infinito
+                        </h1>
+                        <p className="text-slate-400 mt-2">
+                            Sobreviva ao caos do pronto-socorro!
+                        </p>
+                    </div>
+
+                    {/* Game Info */}
+                    <div className="bg-slate-800/50 rounded-2xl border border-cyan-500/20 p-6 mb-6 backdrop-blur-sm">
+                        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <AlertCircle className="w-5 h-5 text-cyan-400" />
+                            Como Jogar
+                        </h2>
+                        <ul className="space-y-3 text-slate-300 text-sm">
+                            <li className="flex items-start gap-2">
+                                <span className="w-5 h-5 bg-emerald-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-emerald-400 text-xs">1</span>
+                                </span>
+                                <span>Atenda pacientes em fila com diagnósticos rápidos</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="w-5 h-5 bg-yellow-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-yellow-400 text-xs">2</span>
+                                </span>
+                                <span>Mantenha o nível de caos baixo para não colapsar</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="w-5 h-5 bg-purple-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-purple-400 text-xs">3</span>
+                                </span>
+                                <span>Entre ondas, escolha cartas com habilidades especiais</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="w-5 h-5 bg-red-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-red-400 text-xs">4</span>
+                                </span>
+                                <span>Cuidado com eventos aleatórios que aumentam o caos!</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* Start Button */}
+                    <button
+                        onClick={handleStartGame}
+                        className="w-full py-4 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-bold rounded-xl hover:from-cyan-600 hover:to-emerald-600 transition-all transform hover:scale-[1.02] shadow-lg shadow-cyan-500/30 mb-4 flex items-center justify-center gap-3"
+                    >
+                        <Zap className="w-6 h-6" />
+                        Iniciar Plantão
+                    </button>
+
+                    {/* Challenge Buttons */}
+                    <div className="flex gap-3 mb-4">
+                        <button
+                            onClick={() => setShowChallengeModal(true)}
+                            className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:from-purple-600 hover:to-pink-600 transition-all"
+                        >
+                            <Swords className="w-5 h-5" />
+                            Desafiar Amigo
+                        </button>
+                        <button
+                            onClick={() => navigate('/games/plantao-infinito/challenges')}
+                            className="flex-1 py-3 bg-slate-800 border border-purple-500/30 text-purple-400 font-bold rounded-xl flex items-center justify-center gap-2 relative hover:bg-slate-700 transition-all"
+                        >
+                            <Users className="w-5 h-5" />
+                            Desafios
+                            {pendingChallenges.length > 0 && (
+                                <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center animate-pulse">
+                                    {pendingChallenges.length}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+
+                    {/* Back Button */}
+                    <button
+                        onClick={() => navigate('/games')}
+                        className="w-full py-3 bg-slate-800 border border-slate-700 text-slate-400 font-medium rounded-xl hover:bg-slate-700 transition-all"
+                    >
+                        Voltar aos Jogos
+                    </button>
+                </div>
+
+                {/* Challenge Modal */}
+                <ChallengeFriendModal
+                    isOpen={showChallengeModal}
+                    onClose={() => setShowChallengeModal(false)}
+                    gameType="plantao"
+                    onChallengeCreated={handleChallengeCreated}
+                />
             </div>
         );
     }
@@ -643,14 +802,16 @@ export const PlantaoInfinitoPage: React.FC = () => {
 
                     <div className="flex gap-3">
                         <button
-                            onClick={() => navigate('/games')}
-                            className="flex-1 py-3 bg-slate-700 text-white font-bold rounded-xl"
+                            onClick={() => {
+                                setShowStart(true);
+                            }}
+                            className="flex-1 py-3 bg-slate-700 text-white font-bold rounded-xl hover:bg-slate-600 transition-all"
                         >
-                            Sair
+                            Menu
                         </button>
                         <button
                             onClick={startGame}
-                            className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-bold rounded-xl"
+                            className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-bold rounded-xl hover:from-cyan-600 hover:to-emerald-600 transition-all"
                         >
                             Tentar Novamente
                         </button>

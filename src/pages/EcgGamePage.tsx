@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Heart,
     ArrowLeft,
@@ -12,12 +12,23 @@ import {
     Play,
     RotateCcw,
     Maximize2,
-    X
+    X,
+    Swords,
+    Users,
+    AlertCircle
 } from 'lucide-react';
 import { useEcgGameStore } from '../store/ecgGameStore';
+import { useGameChallengeStore } from '../store/gameChallengeStore';
+import { useAuth } from '../contexts/AuthContext';
+import { ChallengeFriendModal } from '../components/challenges';
 import clsx from 'clsx';
 
 export const EcgGamePage: React.FC = () => {
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const { user } = useAuth();
+    const { fetchMyChallenges, getPendingChallenges, submitScore } = useGameChallengeStore();
+
     const {
         isPlaying,
         currentCase,
@@ -40,8 +51,48 @@ export const EcgGamePage: React.FC = () => {
         reset
     } = useEcgGameStore();
 
-    // Image zoom state
+    // Challenge and UI state
     const [imageZoom, setImageZoom] = useState(false);
+    const [showChallengeModal, setShowChallengeModal] = useState(false);
+    const [activeChallengeId, setActiveChallengeId] = useState<string | null>(null);
+
+    // Check for challenge in URL params
+    useEffect(() => {
+        const challengeId = searchParams.get('challenge');
+        if (challengeId) {
+            setActiveChallengeId(challengeId);
+            startGame(); // Start game immediately when accepting challenge
+        }
+    }, [searchParams]);
+
+    // Fetch pending challenges on mount
+    useEffect(() => {
+        if (user?.id) {
+            fetchMyChallenges(user.id, 'ecg');
+        }
+    }, [user?.id]);
+
+    // Submit score when game ends in challenge mode
+    useEffect(() => {
+        if (!isPlaying && casesAnswered > 0 && activeChallengeId && user?.id) {
+            submitScore(activeChallengeId, user.id, {
+                correctAnswers: correctAnswers,
+                score: correctAnswers, // Config usa correctAnswers para comparação
+                casesAnswered,
+                bestStreak
+            });
+            fetchMyChallenges(user.id, 'ecg');
+        }
+    }, [isPlaying, casesAnswered, activeChallengeId]);
+
+    // Get pending challenges for badge
+    const pendingChallenges = user?.id ? getPendingChallenges(user.id, 'ecg') : [];
+
+    // Handle challenge created
+    const handleChallengeCreated = (challengeId: string) => {
+        setActiveChallengeId(challengeId);
+        startGame();
+    };
 
     // Timer effect
     useEffect(() => {
@@ -70,26 +121,56 @@ export const EcgGamePage: React.FC = () => {
     // Start Screen
     if (!isPlaying && !showResult) {
         return (
-            <div className="h-full flex flex-col items-center justify-center text-center p-4">
-                <div className="max-w-md">
-                    <div className="text-8xl mb-6">🫀</div>
-                    <h1 className="text-3xl font-bold text-white mb-4">
-                        Diagnostique o ECG
-                    </h1>
-                    <p className="text-slate-400 mb-8">
-                        Analise o caso clínico, observe o ECG e identifique o diagnóstico correto.
-                        O jogo continua até você errar!
-                    </p>
+            <div className="h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-red-900/10 to-slate-900 p-4">
+                <div className="max-w-md w-full">
+                    {/* Header */}
+                    <div className="text-center mb-8">
+                        <div className="relative inline-block mb-4">
+                            <div className="absolute inset-0 bg-red-500/30 rounded-full blur-xl animate-pulse"></div>
+                            <div className="relative w-24 h-24 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center">
+                                <Heart className="w-12 h-12 text-white" />
+                            </div>
+                        </div>
+                        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400">
+                            Diagnostique o ECG
+                        </h1>
+                        <p className="text-slate-400 mt-2">
+                            Analise casos clínicos e identifique o diagnóstico!
+                        </p>
+                    </div>
 
-                    <div className="flex items-center justify-center gap-6 mb-8 text-sm">
-                        <div className="flex items-center gap-2 text-cyan-400">
-                            <Clock className="w-5 h-5" />
-                            <span>60s por caso</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-emerald-400">
-                            <Zap className="w-5 h-5" />
-                            <span>Modo infinito</span>
-                        </div>
+                    {/* Game Info */}
+                    <div className="bg-slate-800/50 rounded-2xl border border-red-500/20 p-6 mb-6 backdrop-blur-sm">
+                        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <AlertCircle className="w-5 h-5 text-red-400" />
+                            Como Jogar
+                        </h2>
+                        <ul className="space-y-3 text-slate-300 text-sm">
+                            <li className="flex items-start gap-2">
+                                <span className="w-5 h-5 bg-cyan-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-cyan-400 text-xs">1</span>
+                                </span>
+                                <span>Leia o caso clínico e analise o ECG apresentado</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="w-5 h-5 bg-emerald-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-emerald-400 text-xs">2</span>
+                                </span>
+                                <span>Escolha o diagnóstico correto entre as alternativas</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="w-5 h-5 bg-yellow-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-yellow-400 text-xs">3</span>
+                                </span>
+                                <span>Você tem 60 segundos por caso - seja rápido!</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="w-5 h-5 bg-red-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-red-400 text-xs">4</span>
+                                </span>
+                                <span>O jogo continua até você errar - modo infinito!</span>
+                            </li>
+                        </ul>
                     </div>
 
                     {error && (
@@ -98,10 +179,11 @@ export const EcgGamePage: React.FC = () => {
                         </div>
                     )}
 
+                    {/* Start Button */}
                     <button
                         onClick={startGame}
                         disabled={isLoading}
-                        className="px-8 py-4 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl text-white font-bold text-lg hover:scale-105 transition-transform disabled:opacity-50 flex items-center gap-3 mx-auto"
+                        className="w-full py-4 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold rounded-xl hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-[1.02] shadow-lg shadow-red-500/30 mb-4 flex items-center justify-center gap-3 disabled:opacity-50"
                     >
                         {isLoading ? (
                             <Loader2 className="w-6 h-6 animate-spin" />
@@ -111,14 +193,46 @@ export const EcgGamePage: React.FC = () => {
                         {isLoading ? 'Carregando...' : 'Iniciar Jogo'}
                     </button>
 
-                    <Link
-                        to="/games"
-                        className="mt-6 text-slate-400 hover:text-white flex items-center gap-2 justify-center transition-colors"
+                    {/* Challenge Buttons */}
+                    <div className="flex gap-3 mb-4">
+                        <button
+                            onClick={() => setShowChallengeModal(true)}
+                            className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:from-purple-600 hover:to-pink-600 transition-all"
+                        >
+                            <Swords className="w-5 h-5" />
+                            Desafiar Amigo
+                        </button>
+                        <button
+                            onClick={() => navigate('/games/ecg/challenges')}
+                            className="flex-1 py-3 bg-slate-800 border border-purple-500/30 text-purple-400 font-bold rounded-xl flex items-center justify-center gap-2 relative hover:bg-slate-700 transition-all"
+                        >
+                            <Users className="w-5 h-5" />
+                            Desafios
+                            {pendingChallenges.length > 0 && (
+                                <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center animate-pulse">
+                                    {pendingChallenges.length}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+
+                    {/* Back Button */}
+                    <button
+                        onClick={() => navigate('/games')}
+                        className="w-full py-3 bg-slate-800 border border-slate-700 text-slate-400 font-medium rounded-xl hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        Voltar para Games
-                    </Link>
+                        Voltar aos Jogos
+                    </button>
                 </div>
+
+                {/* Challenge Modal */}
+                <ChallengeFriendModal
+                    isOpen={showChallengeModal}
+                    onClose={() => setShowChallengeModal(false)}
+                    gameType="ecg"
+                    onChallengeCreated={handleChallengeCreated}
+                />
             </div>
         );
     }
@@ -166,12 +280,12 @@ export const EcgGamePage: React.FC = () => {
                             <RotateCcw className="w-5 h-5" />
                             Jogar Novamente
                         </button>
-                        <Link
-                            to="/games"
+                        <button
+                            onClick={() => { reset(); navigate('/games/ecg'); }}
                             className="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl text-white font-medium transition-colors"
                         >
-                            Voltar
-                        </Link>
+                            Menu
+                        </button>
                     </div>
                 </div>
             </div>

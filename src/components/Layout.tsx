@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { useGameStore } from '../store/gameStore';
 import { useMessageStore } from '../store/messageStore';
 import { useRealtimeMessageStore } from '../store/realtimeMessageStore';
+import { useGameChallengeStore } from '../store/gameChallengeStore';
 import { useAuth } from '../contexts/AuthContext';
 import { useState, useEffect } from 'react';
 
@@ -16,6 +17,7 @@ export const Layout = ({ onShowTutorial }: LayoutProps) => {
     const { coins, xp, level } = useGameStore();
     const { messages: systemMessages } = useMessageStore();
     const { messages: directMessages, fetchMessages, subscribeToMessages, unsubscribe } = useRealtimeMessageStore();
+    const { subscribeToNewChallenges, unsubscribe: unsubscribeChallenges, fetchMyChallenges } = useGameChallengeStore();
     const { user, syncing } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -25,6 +27,15 @@ export const Layout = ({ onShowTutorial }: LayoutProps) => {
             fetchMessages(user.id);
             subscribeToMessages(user.id);
             return () => unsubscribe();
+        }
+    }, [user?.id]);
+
+    // Subscribe to game challenge notifications when logged in
+    useEffect(() => {
+        if (user?.id) {
+            fetchMyChallenges(user.id); // Fetch all game challenges
+            subscribeToNewChallenges(user.id);
+            return () => unsubscribeChallenges();
         }
     }, [user?.id]);
 

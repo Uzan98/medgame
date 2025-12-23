@@ -21,6 +21,15 @@ import { ConsultaExpressPage } from './pages/ConsultaExpressPage'
 import { EcgGamePage } from './pages/EcgGamePage'
 import { MedDetectivePage } from './pages/MedDetectivePage'
 import { MedTriviaPage } from './pages/MedTriviaPage'
+import {
+    TriviaChallengesPage,
+    DetectiveChallengesPage,
+    MilhaoChallengesPage,
+    EcgChallengesPage,
+    ConsultaChallengesPage,
+    PlantaoChallengesPage,
+    QuizChallengesPage
+} from './pages/GameChallengePages'
 import { FriendsPage } from './pages/FriendsPage'
 import { FriendProfilePage } from './pages/FriendProfilePage'
 import { AuthPage } from './pages/AuthPage'
@@ -110,6 +119,7 @@ function App() {
                         <Route path="cases" element={<CaseCatalog />} />
                         <Route path="game/:caseId" element={<GameInterface />} />
                         <Route path="quiz" element={<QuizPage />} />
+                        <Route path="quiz/challenges" element={<QuizChallengesPage />} />
                         <Route path="shop" element={<ShopPage />} />
                         <Route path="leaderboard" element={<LeaderboardPage />} />
                         <Route path="study" element={<StudyPage />} />
@@ -118,11 +128,17 @@ function App() {
                         <Route path="shift/:shiftId" element={<ShiftGamePage />} />
                         <Route path="games" element={<MedGamesPage />} />
                         <Route path="games/medmilhao" element={<MedMilhaoPage />} />
+                        <Route path="games/medmilhao/challenges" element={<MilhaoChallengesPage />} />
                         <Route path="games/plantao-infinito" element={<PlantaoInfinitoPage />} />
+                        <Route path="games/plantao-infinito/challenges" element={<PlantaoChallengesPage />} />
                         <Route path="games/consulta-express" element={<ConsultaExpressPage />} />
+                        <Route path="games/consulta-express/challenges" element={<ConsultaChallengesPage />} />
                         <Route path="games/ecg" element={<EcgGamePage />} />
+                        <Route path="games/ecg/challenges" element={<EcgChallengesPage />} />
                         <Route path="games/detective" element={<MedDetectivePage />} />
+                        <Route path="games/detective/challenges" element={<DetectiveChallengesPage />} />
                         <Route path="games/trivia" element={<MedTriviaPage />} />
+                        <Route path="games/trivia/challenges" element={<TriviaChallengesPage />} />
                         <Route path="profile" element={<Profile />} />
                         <Route path="friends" element={<FriendsPage />} />
                         <Route path="friends/:friendId" element={<FriendProfilePage />} />

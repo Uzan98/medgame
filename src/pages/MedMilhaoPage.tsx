@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     ArrowLeft,
     HelpCircle,
@@ -15,10 +15,15 @@ import {
     VolumeX,
     Crown,
     Shield,
-    DollarSign
+    DollarSign,
+    Swords,
+    Zap
 } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { useToastStore } from '../store/toastStore';
+import { useGameChallengeStore } from '../store/gameChallengeStore';
+import { useAuth } from '../contexts/AuthContext';
+import { ChallengeFriendModal } from '../components/challenges';
 import clsx from 'clsx';
 
 // Prize ladder (in MediCoins)
@@ -80,8 +85,15 @@ const SOUNDS = {
 
 export const MedMilhaoPage: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const { user } = useAuth();
     const { addCoins, addXP } = useGameStore();
+    const { fetchMyChallenges, getPendingChallenges, submitScore } = useGameChallengeStore();
+
     const [soundEnabled, setSoundEnabled] = useState(true);
+    const [showStart, setShowStart] = useState(true);
+    const [showChallengeModal, setShowChallengeModal] = useState(false);
+    const [activeChallengeId, setActiveChallengeId] = useState<string | null>(null);
 
     const [gameState, setGameState] = useState<GameState>({
         currentLevel: 1,
@@ -101,6 +113,25 @@ export const MedMilhaoPage: React.FC = () => {
     const [showQuitConfirm, setShowQuitConfirm] = useState(false);
     const [questions] = useState(() => [...sampleQuestions].sort(() => Math.random() - 0.5));
     const [showLadder, setShowLadder] = useState(false);
+
+    // Check for challenge in URL params
+    useEffect(() => {
+        const challengeId = searchParams.get('challenge');
+        if (challengeId) {
+            setActiveChallengeId(challengeId);
+            setShowStart(false); // Start game immediately when accepting challenge
+        }
+    }, [searchParams]);
+
+    // Fetch pending challenges on mount
+    useEffect(() => {
+        if (user?.id) {
+            fetchMyChallenges(user.id, 'milhao');
+        }
+    }, [user?.id]);
+
+    // Get pending challenges for badge
+    const pendingChallenges = user?.id ? getPendingChallenges(user.id, 'milhao') : [];
 
     const currentQuestion = questions[gameState.currentLevel - 1];
     const currentPrize = prizeLadder[gameState.currentLevel - 1];
@@ -182,7 +213,7 @@ export const MedMilhaoPage: React.FC = () => {
         endGame(prevPrize);
     };
 
-    const endGame = (prize: number) => {
+    const endGame = async (prize: number) => {
         setGameState(prev => ({ ...prev, gameOver: true, wonPrize: prize }));
         if (prize > 0) {
             const actualPrize = Math.floor(prize / 100);
@@ -190,6 +221,25 @@ export const MedMilhaoPage: React.FC = () => {
             addXP(actualPrize);
             useToastStore.getState().addToast(`Você ganhou ${actualPrize} MediCoins! 🎉`, 'success');
         }
+
+        // Submit score if in challenge mode
+        if (activeChallengeId && user?.id) {
+            await submitScore(activeChallengeId, user.id, {
+                score: prize,
+                level: gameState.currentLevel,
+                isMillionaire: prize >= 1000000
+            });
+            fetchMyChallenges(user.id, 'milhao');
+        }
+    };
+
+    const handleChallengeCreated = (challengeId: string) => {
+        setActiveChallengeId(challengeId);
+        setShowStart(false);
+    };
+
+    const handleStartGame = () => {
+        setShowStart(false);
     };
 
     const useHelp = (helpType: HelpType) => {
@@ -246,6 +296,123 @@ export const MedMilhaoPage: React.FC = () => {
         if (prize >= 1000) return `${prize / 1000}k`;
         return prize.toString();
     };
+
+    // Start Screen
+    if (showStart) {
+        return (
+            <div className="h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-yellow-900/10 to-slate-900 p-4">
+                <div className="max-w-md w-full">
+                    {/* Header */}
+                    <div className="text-center mb-8">
+                        <div className="relative inline-block mb-4">
+                            <div className="absolute inset-0 bg-yellow-500/30 rounded-full blur-xl animate-pulse"></div>
+                            <div className="relative w-24 h-24 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full flex items-center justify-center">
+                                <Coins className="w-12 h-12 text-white" />
+                            </div>
+                        </div>
+                        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-400">
+                            MedMilhão
+                        </h1>
+                        <p className="text-slate-400 mt-2">
+                            Responda corretamente e chegue ao milhão!
+                        </p>
+                    </div>
+
+                    {/* Game Info */}
+                    <div className="bg-slate-800/50 rounded-2xl border border-yellow-500/20 p-6 mb-6 backdrop-blur-sm">
+                        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <AlertCircle className="w-5 h-5 text-yellow-400" />
+                            Como Jogar
+                        </h2>
+                        <ul className="space-y-3 text-slate-300 text-sm">
+                            <li className="flex items-start gap-2">
+                                <span className="w-5 h-5 bg-yellow-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-yellow-400 text-xs">1</span>
+                                </span>
+                                <span>Responda 12 perguntas de dificuldade crescente</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="w-5 h-5 bg-emerald-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-emerald-400 text-xs">2</span>
+                                </span>
+                                <span>Use 4 ajudas: Cartas, Plateia, Especialista e Pular</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="w-5 h-5 bg-cyan-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-cyan-400 text-xs">3</span>
+                                </span>
+                                <span>Níveis seguros (5, 10, 12) garantem seu prêmio</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="w-5 h-5 bg-purple-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-purple-400 text-xs">4</span>
+                                </span>
+                                <span>Pode parar e levar o prêmio atual a qualquer momento</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* Prize Preview */}
+                    <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 rounded-xl border border-yellow-500/30 p-4 mb-6 text-center">
+                        <p className="text-sm text-yellow-200/70">Prêmio máximo</p>
+                        <div className="text-3xl font-black text-yellow-400 flex items-center justify-center gap-2">
+                            <Crown className="w-7 h-7" />
+                            1.000.000
+                            <Coins className="w-6 h-6" />
+                        </div>
+                    </div>
+
+                    {/* Start Button */}
+                    <button
+                        onClick={handleStartGame}
+                        className="w-full py-4 bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-bold rounded-xl hover:from-yellow-600 hover:to-amber-600 transition-all transform hover:scale-[1.02] shadow-lg shadow-yellow-500/30 mb-4 flex items-center justify-center gap-3"
+                    >
+                        <Zap className="w-6 h-6" />
+                        Começar Jogo
+                    </button>
+
+                    {/* Challenge Buttons */}
+                    <div className="flex gap-3 mb-4">
+                        <button
+                            onClick={() => setShowChallengeModal(true)}
+                            className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:from-purple-600 hover:to-pink-600 transition-all"
+                        >
+                            <Swords className="w-5 h-5" />
+                            Desafiar Amigo
+                        </button>
+                        <button
+                            onClick={() => navigate('/games/medmilhao/challenges')}
+                            className="flex-1 py-3 bg-slate-800 border border-purple-500/30 text-purple-400 font-bold rounded-xl flex items-center justify-center gap-2 relative hover:bg-slate-700 transition-all"
+                        >
+                            <Users className="w-5 h-5" />
+                            Desafios
+                            {pendingChallenges.length > 0 && (
+                                <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center animate-pulse">
+                                    {pendingChallenges.length}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+
+                    {/* Back Button */}
+                    <button
+                        onClick={() => navigate('/games')}
+                        className="w-full py-3 bg-slate-800 border border-slate-700 text-slate-400 font-medium rounded-xl hover:bg-slate-700 transition-all"
+                    >
+                        Voltar aos Jogos
+                    </button>
+                </div>
+
+                {/* Challenge Modal */}
+                <ChallengeFriendModal
+                    isOpen={showChallengeModal}
+                    onClose={() => setShowChallengeModal(false)}
+                    gameType="milhao"
+                    onChallengeCreated={handleChallengeCreated}
+                />
+            </div>
+        );
+    }
 
     // Game Over Screen
     if (gameState.gameOver) {
@@ -318,10 +485,10 @@ export const MedMilhaoPage: React.FC = () => {
 
                     <div className="flex gap-4">
                         <button
-                            onClick={() => navigate('/games')}
+                            onClick={() => setShowStart(true)}
                             className="flex-1 py-4 bg-slate-700/50 backdrop-blur text-white font-bold rounded-xl hover:bg-slate-600/50 transition-colors"
                         >
-                            Voltar
+                            Menu
                         </button>
                         <button
                             onClick={restartGame}
